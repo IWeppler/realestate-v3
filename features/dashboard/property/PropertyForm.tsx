@@ -9,6 +9,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import {
+  NearbyPlacesEditor,
+  type NearbyDraft,
+} from "@/features/dashboard/property/NearbyPlacesEditor";
+import { isNearbyCategory } from "@/features/properties/nearby-categories";
 import { optimizeImage } from "@/features/dashboard/property/optimizeImage";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -204,6 +209,7 @@ export function PropertyForm({
   const [agents, setAgents] = useState<Agent[]>([]);
   const [allAmenities, setAllAmenities] = useState<Amenity[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+  const [nearby, setNearby] = useState<NearbyDraft[]>([]);
   const [existingImages, setExistingImages] = useState(
     initialData?.property_images || [],
   );
@@ -304,6 +310,20 @@ export function PropertyForm({
       if (types) setPropertyTypes(types);
       if (agentsData) setAgents(agentsData);
       if (amenities) setAllAmenities(amenities);
+      if (initialData?.id) {
+        const { data: places } = await supabase
+          .from("property_nearby_places")
+          .select("id, category, name, distance_m")
+          .eq("property_id", initialData.id);
+        setNearby(
+          (places ?? []).filter((p) => isNearbyCategory(p.category)).map((p) => ({
+            key: p.id,
+            category: p.category as NearbyDraft["category"],
+            name: p.name,
+            distance_m: p.distance_m,
+          })),
+        );
+      }
     };
     load();
   }, [supabase]);
@@ -498,6 +518,20 @@ export function PropertyForm({
           amenities.map((id) => ({
             property_id: propertyId!,
             amenity_id: id,
+          })),
+        );
+      }
+      await supabase
+        .from("property_nearby_places")
+        .delete()
+        .eq("property_id", propertyId);
+      if (nearby.length > 0) {
+        await supabase.from("property_nearby_places").insert(
+          nearby.map(({ category, name, distance_m }) => ({
+            property_id: propertyId!,
+            category,
+            name,
+            distance_m,
           })),
         );
       }
@@ -936,6 +970,16 @@ export function PropertyForm({
                   )}
                 />
               )}
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium">
+                  Lugares cercanos{" "}
+                  {nearby.length > 0 && (
+                    <span className="font-normal text-muted-foreground">· {nearby.length}</span>
+                  )}
+                </p>
+                <NearbyPlacesEditor value={nearby} onChange={setNearby} />
+              </div>
             </Section>
 
             {/* 4. Descripción */}

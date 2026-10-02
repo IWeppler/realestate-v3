@@ -536,6 +536,41 @@ export type Database = {
           },
         ]
       }
+      property_nearby_places: {
+        Row: {
+          category: string
+          created_at: string
+          distance_m: number | null
+          id: string
+          name: string
+          property_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          distance_m?: number | null
+          id?: string
+          name: string
+          property_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          distance_m?: number | null
+          id?: string
+          name?: string
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_nearby_places_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       property_types: {
         Row: {
           created_at: string | null

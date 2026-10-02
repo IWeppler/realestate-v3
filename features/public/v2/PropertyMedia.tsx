@@ -6,22 +6,13 @@ import { useTranslations } from "next-intl";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Images } from "lucide-react";
 import { Lightbox } from "@/features/properties/ImageGallery";
+import styles from "./property-detail.module.css";
 import { CardImage } from "@/features/properties/CardImage";
 import { EASE } from "@/features/public/v2/motion";
 import { cardPhotoFor, photoTransitionName } from "@/features/properties/photoTransition";
 
-// Celdas del mosaico según la cantidad de fotos (4 columnas x 2 filas en
-// desktop), así nunca queda un hueco: la principal siempre manda.
-const SPANS: Record<number, string[]> = {
-  1: ["md:col-span-4 md:row-span-2"],
-  2: ["md:col-span-2 md:row-span-2", "md:col-span-2 md:row-span-2"],
-  3: ["md:col-span-2 md:row-span-2", "md:col-span-2", "md:col-span-2"],
-  4: ["md:col-span-2 md:row-span-2", "md:col-span-2", "md:col-span-1", "md:col-span-1"],
-  5: ["md:col-span-2 md:row-span-2", "md:col-span-1", "md:col-span-1", "md:col-span-1", "md:col-span-1"],
-};
-
-// Galería de la ficha: mosaico con la foto principal grande y hasta
-// cuatro más a su lado (en móvil, solo la principal). Cualquier foto abre
+// Galería de la ficha: foto principal arriba y hasta
+// dos fotos debajo, dentro de la columna sticky de la ficha. Cualquier foto abre
 // el lightbox en su posición; el botón "Ver las N fotos" lo abre desde la
 // primera. Entra con un recorte que se abre, una sola vez al cargar; si
 // se llega desde una tarjeta, la foto principal viene volando desde ella
@@ -40,36 +31,34 @@ export function PropertyMedia({ id, images, title }: { id: string; images: strin
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-[16/9] w-full flex-col items-center justify-center gap-2 rounded-4xl bg-sunken text-fg-secondary md:aspect-[21/9]">
+      <div className={`${styles.emptyMedia} flex w-full flex-col items-center justify-center gap-2 bg-sunken text-fg-secondary`}>
         <Images className="h-8 w-8 opacity-50" aria-hidden="true" />
         {t("empty")}
       </div>
     );
   }
 
-  const shown = images.slice(0, 5);
-  const spans = SPANS[shown.length];
+  const shown = images.slice(0, 3);
 
   return (
     <>
       <motion.div
         className="relative"
-        initial={reduce || fromCard ? false : { clipPath: "inset(4% 3% 0% 3% round 14px)" }}
-        animate={{ clipPath: "inset(0% 0% 0% 0% round 14px)" }}
+        initial={reduce || fromCard ? false : { clipPath: "inset(4% 3% 0% 3% round 8px)" }}
+        animate={{ clipPath: "inset(0% 0% 0% 0% round 8px)" }}
         transition={{ duration: 1.2, ease: EASE }}
       >
         <ul
           aria-label={t("listLabel")}
-          className="grid aspect-[4/3] grid-cols-1 gap-2 overflow-hidden rounded-4xl md:aspect-auto md:h-[min(36rem,calc(100dvh-14rem))] md:min-h-[26rem] md:grid-cols-4 md:grid-rows-2"
+          className={`${styles.mediaGrid} ${shown.length === 1 ? styles.onePhoto : ""} ${shown.length === 2 ? styles.twoPhotos : ""}`}
         >
           {shown.map((src, i) => {
             // La principal lleva sus propias esquinas y su nombre de
             // transición: el morph captura la celda sola, sin el recorte
             // redondeado de la grilla.
             const main = i === 0;
-            const corners = shown.length > 1 ? "rounded-4xl md:rounded-r-none" : "rounded-4xl";
             const cell = (
-              <li key={`${src}-${i}`} className={`relative min-h-0 ${spans[i]} ${main ? `overflow-hidden ${corners}` : "hidden md:block"}`}>
+              <li key={`${src}-${i}`} className={`${styles.mediaCell} ${main ? styles.mediaMain : ""}`}>
                 <button
                   type="button"
                   onClick={() => open(i)}
@@ -81,12 +70,13 @@ export function PropertyMedia({ id, images, title }: { id: string; images: strin
                       src={src}
                       alt={t("mainAlt", { title })}
                       fill
-                      priority
-                      sizes="(min-width: 768px) 50vw, 100vw"
+                      loading="eager"
+                      fetchPriority="high"
+                      sizes="(min-width: 1480px) 780px, (min-width: 1024px) 58vw, 100vw"
                       className="object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                     />
                   ) : (
-                    <CardImage src={src} alt={t("photoAlt", { index: i + 1, title })} sizes="25vw" />
+                    <CardImage src={src} alt={t("photoAlt", { index: i + 1, title })} sizes="(min-width: 1480px) 390px, (min-width: 1024px) 29vw, 50vw" />
                   )}
                 </button>
               </li>

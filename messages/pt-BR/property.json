@@ -102,5 +102,24 @@
     "sold": "Vendido",
     "rented": "Alugado",
     "reserved": "Reservado"
+  },
+  "nearby": {
+    "title": "O que há por perto",
+    "meters": "{value} m",
+    "km": "{value} km",
+    "categories": {
+      "shopping": "Shopping",
+      "park": "Praças e parques",
+      "school": "Escolas",
+      "university": "Universidades",
+      "hospital": "Hospitais e clínicas",
+      "pharmacy": "Farmácias",
+      "supermarket": "Supermercados",
+      "transport": "Transporte",
+      "parking": "Estacionamento",
+      "restaurant": "Gastronomia",
+      "gym": "Academias",
+      "other": "Outros"
+    }
   }
 }

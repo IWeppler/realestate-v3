@@ -21,6 +21,7 @@ type ContactProps = {
   priceLabel: string;
   expensasDisplay: string | null;
   agent: Agent;
+  showPrice?: boolean;
 };
 
 // Acción principal en naranja (agendar visita, la conversión de la ficha);
@@ -48,7 +49,7 @@ function initials(name: string) {
     .join("");
 }
 
-// Tarjeta de contacto de la ficha (columna derecha, fija al scrollear):
+// Tarjeta de contacto de la ficha (columna de información):
 // precio, acción principal (agendar visita) y secundaria (WhatsApp), y el
 // asesor a cargo. Si la propiedad ya no está disponible, se ofrece
 // consultar por otras parecidas en lugar de agendar.
@@ -60,21 +61,25 @@ export function PropertyContactCard({
   priceLabel,
   expensasDisplay,
   agent,
+  showPrice = true,
 }: ContactProps) {
   const t = useTranslations("contact.property");
   return (
-    <div className="rounded-3xl bg-card p-6 shadow-[0_30px_60px_-36px_rgb(21_21_21/0.4)] md:p-7">
-      <p className="text-sm text-fg-secondary">{priceLabel}</p>
-      <p className="mt-1 font-display text-4xl leading-none font-medium tracking-[-0.035em] text-foreground md:text-5xl">
-        {priceDisplay}
-      </p>
-      {expensasDisplay && (
-        <p className="mt-2 text-sm text-fg-secondary">
-          {t("expensas", { amount: expensasDisplay })}
-        </p>
+    <div className={showPrice ? "rounded-3xl bg-card p-6 shadow-[0_30px_60px_-36px_rgb(21_21_21/0.4)] md:p-7" : "rounded-2xl border border-border-subtle bg-card p-5"}>
+      {showPrice && (
+        <>
+          <p className="text-sm text-fg-secondary">{priceLabel}</p>
+          <p className="mt-1 font-display text-4xl leading-none font-medium tracking-[-0.035em] text-foreground md:text-5xl">
+            {priceDisplay}
+          </p>
+          {expensasDisplay && (
+            <p className="mt-2 text-sm text-fg-secondary">
+              {t("expensas", { amount: expensasDisplay })}
+            </p>
+          )}
+        </>
       )}
-
-      <div className="mt-8 flex flex-col gap-3">
+      <div className={`flex flex-col gap-3 ${showPrice ? "mt-8" : ""}`}>
         {available ? (
           <Link href={`/agendar/${propertyId}`} className={popClass}>
             <CalendarDays className="h-5 w-5" aria-hidden="true" />

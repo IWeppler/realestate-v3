@@ -8,17 +8,13 @@ import {
   ArrowRight,
   Bath,
   BedDouble,
-  Building,
-  CalendarClock,
   Car,
   Check,
   DoorOpen,
   MapPin,
   Maximize2,
   Navigation,
-  Receipt,
   Ruler,
-  Tag,
 } from "lucide-react";
 
 import { ClientPropertyMap } from "@/features/properties/ClientPropertyMap";
@@ -26,9 +22,12 @@ import { DescriptionWithReadMore } from "@/features/properties/DescriptionReadMo
 import { PropertyJsonLd } from "@/features/public/seo/PropertyJsonLd";
 import { PropertyFullDetails } from "@/features/properties/types/index";
 import { ShareButton } from "@/features/properties/ShareButton";
-import { FactChip, KeyFacts, type Fact } from "@/features/properties/KeyFacts";
+import type { Fact } from "@/features/properties/KeyFacts";
+import styles from "@/features/public/v2/property-detail.module.css";
 import PropertyCard from "@/features/properties/PropertyCard";
 import type { PropertyCardData } from "@/app/types/entities";
+import { NearbyPlaces } from "@/features/properties/NearbyPlaces";
+import { isNearbyCategory, type NearbyPlace } from "@/features/properties/nearby-categories";
 import { ViewCounter } from "@/features/public/v2/ViewCounter";
 import { PropertyMedia } from "@/features/public/v2/PropertyMedia";
 import {
@@ -36,7 +35,6 @@ import {
   PropertyContactCard,
   PropertyInquiryForm,
 } from "@/features/public/v2/PropertyContact";
-import { Reveal } from "@/features/public/v2/Reveal";
 import { SplitHeading, StaggerItem } from "@/features/public/v2/motion";
 import { zoneSlug } from "@/features/public/zones";
 import { getTranslations } from "next-intl/server";
@@ -70,6 +68,16 @@ async function getPropertyDetails(
     throw new Error("No se pudieron cargar los datos de la propiedad.");
   }
   return data as unknown as PropertyFullDetails;
+}
+
+// --- Lugares cercanos ---
+async function getNearbyPlaces(propertyId: string): Promise<NearbyPlace[]> {
+  const supabase = await createClientServer();
+  const { data } = await supabase
+    .from("property_nearby_places")
+    .select("id, category, name, distance_m")
+    .eq("property_id", propertyId);
+  return (data ?? []).filter((p): p is NearbyPlace => isNearbyCategory(p.category));
 }
 
 // --- Cargar Recomendados ---
@@ -193,17 +201,15 @@ const STATUS_KEYS = {
 
 function SectionTitle({ id, children }: { id: string; children: string }) {
   return (
-    <h2 id={id} className="font-display text-3xl leading-[1] font-medium tracking-[-0.03em] text-foreground md:text-4xl">
+    <h2 id={id} className={styles.sectionTitle}>
       {children}
     </h2>
   );
 }
 
 // --- Página Principal ---
-// Ficha de propiedad: galería en mosaico, encabezado, contenido a la
-// izquierda y tarjeta de contacto fija a la derecha (en mobile, resumen
-// de precio y barra inferior con acciones). Cierra con propiedades
-// parecidas.
+// Ficha de propiedad: galería sticky a la izquierda y contenido a la
+// derecha. En móvil se apilan y se conserva la barra de contacto.
 export default async function PropertyPage({
   params: paramsPromise,
 }: {
@@ -216,11 +222,10 @@ export default async function PropertyPage({
 
   if (!property) notFound();
 
-  const recommendedProperties = await getRecommendedProperties(
-    property.id,
-    property.city,
-    property.operation_type ?? "",
-  );
+  const [recommendedProperties, nearbyPlaces] = await Promise.all([
+    getRecommendedProperties(property.id, property.city, property.operation_type ?? ""),
+    getNearbyPlaces(property.id),
+  ]);
 
   const {
     title,
@@ -279,181 +284,120 @@ export default async function PropertyPage({
     property.total_area ? { key: "area", icon: Maximize2, text: `${Number(property.total_area).toLocaleString("es-AR")} m²` } : null,
   ].filter(Boolean) as { key: string; icon: React.ElementType; text: string }[];
 
+  const detailFacts = [
+    { label: t("page.ref", { code: "" }).trim(), value: refCode },
+    ...(typeName ? [{ label: t("facts.type"), value: typeName }] : []),
+    ...keyFacts.map(f => ({ label: f.label, value: [typeof f.value === "number" ? f.value.toLocaleString("es-AR") : f.value, f.unit].filter(Boolean).join(" ") })),
+    ...(pricePerM2 ? [{ label: t("facts.pricePerM2"), value: pricePerM2 }] : []),
+    ...(expensasDisplay ? [{ label: t("facts.expensas"), value: expensasDisplay }] : []),
+    ...(property.antiguedad ? [{ label: t("facts.age"), value: String(property.antiguedad) }] : []),
+  ];
+
   return (
     <div className="w-full bg-background pb-28 lg:pb-0">
       <ViewCounter propertyId={property.id} />
       <PropertyJsonLd property={property} />
 
-      <div className="mx-auto w-full max-w-7xl px-4 pt-6 md:px-8 md:pt-8">
-        <Link
-          href="/propiedades"
-          className="mb-5 inline-flex items-center gap-2 rounded-full text-sm font-medium text-fg-secondary transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          {t("page.backToAll")}
-        </Link>
-
-        {/* --- Galería en mosaico --- */}
-        <PropertyMedia id={property.id} images={images} title={title} />
-
-        {/* --- Encabezado: estado y tipo, título y ubicación. El precio
-            vive en la tarjeta fija (desktop) y en el resumen (móvil). --- */}
-        <header className="mt-8 flex flex-col gap-6 md:mt-10 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
-          <div className="max-w-4xl min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className={`inline-flex h-8 items-center rounded-full px-3.5 text-sm font-semibold ${
-                  available ? "bg-pop text-foreground" : "bg-main text-primary-foreground"
-                }`}
-              >
-                {statusDisplay}
-              </span>
-              {typeName && (
-                <span className="inline-flex h-8 items-center rounded-full border border-border-strong px-3.5 text-sm font-medium text-foreground">
-                  {typeName}
-                </span>
-              )}
-            </div>
-            <SplitHeading
-              as="h1"
-              trigger="mount"
-              delay={0.3}
-              text={title}
-              className="mt-5 font-display text-4xl leading-[0.95] font-medium tracking-[-0.035em] text-balance text-foreground md:text-5xl lg:text-6xl"
-            />
-            {locationString && (
-              <p className="site-rise mt-4 flex items-start gap-2 text-lg text-fg-secondary [--rise-delay:600ms]">
-                <MapPin className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
-                {locationString}
-              </p>
-            )}
-          </div>
-
-          <div className="flex shrink-0 items-center gap-4">
-            <span className="text-xs text-fg-secondary tabular-nums">{t("page.ref", { code: refCode })}</span>
+      <div className={styles.container}>
+        <div className={styles.topBar}>
+          <Link href="/propiedades" className={styles.backLink}>
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            {t("page.backToAll")}
+          </Link>
+          <div className={styles.shareMobile}>
             <ShareButton title={title} price={priceDisplay} location={locationString} />
           </div>
-        </header>
-
-        {/* --- Resumen de precio en móvil (en desktop está en la tarjeta) --- */}
-        <div className="mt-8 rounded-3xl bg-card p-5 lg:hidden">
-          <p className="text-sm text-fg-secondary">{priceLabel}</p>
-          <p className="mt-1 font-display text-4xl leading-none font-medium tracking-[-0.035em] text-foreground">{priceDisplay}</p>
-          {expensasDisplay && <p className="mt-2 text-sm text-fg-secondary">{t("page.expensasExtra", { amount: expensasDisplay })}</p>}
-          {headlineSpecs.length > 0 && (
-            <ul className="mt-4 flex flex-wrap gap-1.5">
-              {headlineSpecs.map(({ key, icon: Icon, text }) => (
-                <li key={key} className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm text-foreground">
-                  <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                  {text}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
 
-        {/* --- Contenido + contacto --- */}
-        <div className="mt-12 grid grid-cols-1 gap-16 lg:mt-16 lg:grid-cols-12 lg:gap-12 xl:gap-16">
-          <div className="flex min-w-0 flex-col gap-16 lg:col-span-7 xl:col-span-8">
-            <section aria-labelledby="facts-title">
-              <SectionTitle id="facts-title">{t("facts.title")}</SectionTitle>
-              <div className="mt-8">
-                <KeyFacts facts={keyFacts} />
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <FactChip icon={Building} label={t("facts.type")} value={typeName} />
-                <FactChip icon={Tag} label={t("facts.pricePerM2")} value={pricePerM2} />
-                <FactChip icon={Receipt} label={t("facts.expensas")} value={expensasDisplay} />
-                <FactChip icon={CalendarClock} label={t("facts.age")} value={property.antiguedad} />
-              </div>
-            </section>
-
-            <Reveal>
-              <section aria-labelledby="desc-title">
-                <SectionTitle id="desc-title">{t("description.title")}</SectionTitle>
-                <div className="mt-6">
-                  <DescriptionWithReadMore text={property.description || ""} />
-                </div>
-              </section>
-            </Reveal>
-
-            {amenities.length > 0 && (
-              <Reveal>
-                <section aria-labelledby="amenities-title">
-                  <SectionTitle id="amenities-title">{t("amenities.title")}</SectionTitle>
-                  <ul className="mt-6 flex flex-wrap gap-2">
-                    {amenities.map((name) => (
-                      <li
-                        key={name}
-                        className="inline-flex items-center gap-2 rounded-full bg-card px-4 py-2.5 text-[15px] font-medium text-foreground"
-                      >
-                        <Check className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
-                        {name}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              </Reveal>
-            )}
-
-            <Reveal>
-              <section aria-labelledby="map-title">
-                <div className="flex flex-wrap items-end justify-between gap-4">
-                  <div>
-                    <SectionTitle id="map-title">{t("location.title")}</SectionTitle>
-                    {locationString && <p className="mt-3 text-base text-fg-secondary">{locationString}</p>}
-                    {city && (
-                      <Link
-                        href={`/zonas/${zoneSlug(city)}`}
-                        className="group mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-foreground underline-offset-4 hover:underline"
-                      >
-                        {t("location.moreIn", { city })}
-                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-                      </Link>
-                    )}
-                  </div>
-                  {hasCoords && (
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${property.latitude},${property.longitude}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-10 items-center gap-2 rounded-full border border-border-strong bg-card px-4 text-sm font-medium text-foreground transition-colors hover:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <Navigation className="h-4 w-4" aria-hidden="true" />
-                      {t("location.directions")}
-                    </a>
-                  )}
-                </div>
-                <div className="mt-6 h-[360px] w-full overflow-hidden rounded-3xl bg-sunken md:h-[440px]">
-                  <ClientPropertyMap lat={property.latitude} lng={property.longitude} title={property.title} />
-                </div>
-              </section>
-            </Reveal>
-
-            <Reveal>
-              <section aria-labelledby="inquiry-title" className="rounded-3xl bg-card p-6 md:p-8">
-                <SectionTitle id="inquiry-title">{t("inquiry.title")}</SectionTitle>
-                <p className="mt-3 mb-8 text-base text-fg-secondary">{t("inquiry.intro")}</p>
-                <PropertyInquiryForm propertyId={property.id} title={title} />
-              </section>
-            </Reveal>
+        <div className={styles.layout}>
+          <div className={styles.gallery}>
+            <PropertyMedia id={property.id} images={images} title={title} />
           </div>
 
-          <aside className="hidden lg:col-span-5 lg:block xl:col-span-4">
-            <div className="sticky top-24">
-              <PropertyContactCard
-                propertyId={property.id}
-                title={title}
-                available={available}
-                priceDisplay={priceDisplay}
-                priceLabel={priceLabel}
-                expensasDisplay={expensasDisplay}
-                agent={property.agents}
-              />
-            </div>
-          </aside>
+          <div className={styles.information}>
+            <header className={styles.heading}>
+              <div className={styles.priceRow}>
+                <div>
+                  <p className={styles.priceLabel}>{priceLabel}</p>
+                  <p className={styles.price}>{priceDisplay}</p>
+                  {expensasDisplay && <p className={styles.extra}>{t("page.expensasExtra", { amount: expensasDisplay })}</p>}
+                </div>
+                <div className={styles.shareDesktop}>
+                  <ShareButton title={title} price={priceDisplay} location={locationString} />
+                </div>
+              </div>
+
+              <div className={styles.statusRow}>
+                <span className={`inline-flex h-7 items-center rounded-full px-3 text-xs font-semibold ${available ? "bg-pop text-foreground" : "bg-main text-primary-foreground"}`}>
+                  {statusDisplay}
+                </span>
+                {typeName && <span className={styles.type}>{typeName}</span>}
+              </div>
+
+              <SplitHeading as="h1" trigger="mount" delay={0.1} text={title} className={styles.title} />
+
+              {headlineSpecs.length > 0 && (
+                <ul className={styles.headlineSpecs}>
+                  {headlineSpecs.map(({ key, icon: Icon, text }) => (
+                    <li key={key}><Icon size={16} strokeWidth={1.5} aria-hidden="true" />{text}</li>
+                  ))}
+                </ul>
+              )}
+
+              {locationString && <p className={styles.address}><MapPin size={16} strokeWidth={1.5} aria-hidden="true" />{locationString}</p>}
+            </header>
+
+            <PropertyContactCard propertyId={property.id} title={title} available={available} priceDisplay={priceDisplay} priceLabel={priceLabel} expensasDisplay={expensasDisplay} agent={property.agents} showPrice={false} />
+
+            <section aria-labelledby="facts-title" className={styles.section}>
+              <SectionTitle id="facts-title">{t("facts.title")}</SectionTitle>
+              <dl className={styles.facts}>
+                {detailFacts.map(({ label, value }) => (
+                  <div key={label} className={styles.factRow}><dt>{label}</dt><dd>{value}</dd></div>
+                ))}
+              </dl>
+            </section>
+
+            <section aria-labelledby="desc-title" className={styles.section}>
+              <SectionTitle id="desc-title">{t("description.title")}</SectionTitle>
+              <div className={styles.sectionBody}><DescriptionWithReadMore text={property.description || ""} /></div>
+            </section>
+
+            {amenities.length > 0 && (
+              <section aria-labelledby="amenities-title" className={styles.section}>
+                <SectionTitle id="amenities-title">{t("amenities.title")}</SectionTitle>
+                <ul className={styles.amenities}>
+                  {amenities.map(name => <li key={name}><Check size={16} strokeWidth={1.5} aria-hidden="true" />{name}</li>)}
+                </ul>
+              </section>
+            )}
+
+            <section aria-labelledby="map-title" className={styles.section}>
+              <SectionTitle id="map-title">{t("location.title")}</SectionTitle>
+              {locationString && <p className={styles.location}>{locationString}</p>}
+              <div className={styles.locationLinks}>
+                {city && <Link href={`/zonas/${zoneSlug(city)}`} className={styles.textLink}>{t("location.moreIn", { city })}<ArrowRight size={16} aria-hidden="true" /></Link>}
+                {hasCoords && <a href={`https://www.google.com/maps/dir/?api=1&destination=${property.latitude},${property.longitude}`} target="_blank" rel="noopener noreferrer" className={styles.textLink}><Navigation size={16} aria-hidden="true" />{t("location.directions")}</a>}
+              </div>
+              <div className={styles.map}><ClientPropertyMap lat={property.latitude} lng={property.longitude} title={property.title} /></div>
+            </section>
+
+            {nearbyPlaces.length > 0 && (
+              <section aria-labelledby="nearby-title" className={styles.section}>
+                <SectionTitle id="nearby-title">{t("nearby.title")}</SectionTitle>
+                <NearbyPlaces places={nearbyPlaces} />
+              </section>
+            )}
+
+            <section aria-labelledby="inquiry-title" className={`${styles.section} ${styles.inquiry}`}>
+              <SectionTitle id="inquiry-title">{t("inquiry.title")}</SectionTitle>
+              <p className={styles.inquiryIntro}>{t("inquiry.intro")}</p>
+              <PropertyInquiryForm propertyId={property.id} title={title} />
+            </section>
+          </div>
         </div>
       </div>
+
 
       {/* --- Parecidas --- */}
       {recommendedProperties.length > 0 && (
