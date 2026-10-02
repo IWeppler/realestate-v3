@@ -6,6 +6,10 @@ import { CardImage } from "@/features/properties/CardImage";
 
 type PropertyCardProps = {
   property: PropertyCardData;
+  // "feature": la foto no tiene proporción fija y ocupa todo el alto que
+  // le da la grilla (la tarjeta grande de Destacadas).
+  variant?: "default" | "feature";
+  sizes?: string;
 };
 
 type OrderedImage = { image_url: string | null; order?: number | null };
@@ -37,34 +41,68 @@ function parkingText(cocheras: string | null) {
   return "Cochera";
 }
 
-// Pie compartido de las tarjetas (listados y marquee del hero): una fila
-// con el nombre (protagonista) y operación + precio (chico, a la derecha),
-// y otra con las características con íconos. El link al título se estira
-// sobre todo el contenedor `relative` más cercano (la tarjeta entera).
-// `hidden`: copia decorativa (marquee), fuera del Tab y de lectores.
-export function PropertyMeta({
-  property,
-  compact = false,
-  hidden = false,
-}: {
-  property: PropertyCardData;
-  compact?: boolean;
-  hidden?: boolean;
-}) {
+// Operación ("En venta") y precio ("USD 95.000", "/mes" en alquileres).
+export function operationAndPrice(property: PropertyCardData) {
   const operation = OPERATION_LABEL[property.status] ?? "Propiedad";
   const hasPrice = typeof property.price === "number" && property.price > 0;
   const price = hasPrice
     ? `${formatPrice(property.price, property.currency)}${RENTAL_STATUSES.has(property.status) ? "/mes" : ""}`
     : "Consultar";
+  return { operation, price };
+}
 
+type Spec = { key: string; icon: React.ElementType; text: string };
+
+// Características principales, en el orden en que se muestran.
+export function propertySpecs(property: PropertyCardData): Spec[] {
   const parking = parkingText(property.cocheras);
-  const specs = [
+  return [
     property.bedrooms ? { key: "bed", icon: BedDouble, text: `${property.bedrooms} dorm.` } : null,
     property.bathrooms ? { key: "bath", icon: Bath, text: `${property.bathrooms} ${property.bathrooms === 1 ? "baño" : "baños"}` } : null,
     property.total_area ? { key: "area", icon: Maximize, text: `${Number(property.total_area).toLocaleString("es-AR")} m²` } : null,
     parking ? { key: "parking", icon: Car, text: parking } : null,
-  ].filter(Boolean) as { key: string; icon: React.ElementType; text: string }[];
+  ].filter(Boolean) as Spec[];
+}
 
+// Características como badges sobre el borde inferior de la foto. Fondo
+// casi opaco con blur: legibles sobre cualquier foto (clara u oscura).
+export function SpecBadges({ property }: { property: PropertyCardData }) {
+  const specs = propertySpecs(property);
+  if (specs.length === 0) return null;
+  return (
+    <ul className="pointer-events-none absolute inset-x-3 bottom-3 flex flex-wrap gap-1.5">
+      {specs.map(({ key, icon: Icon, text }) => (
+        <li
+          key={key}
+          className="inline-flex items-center gap-1.5 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm"
+        >
+          <Icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
+          {text}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// Pie compartido de las tarjetas: una fila con el nombre (protagonista)
+// y operación + precio (chico, a la derecha), y opcionalmente otra con las
+// características con íconos (donde no van como badges sobre la foto).
+// El link al título se estira sobre todo el contenedor `relative` más
+// cercano (la tarjeta entera). `hidden`: copia decorativa, fuera del Tab
+// y de lectores.
+export function PropertyMeta({
+  property,
+  compact = false,
+  hidden = false,
+  specs: showSpecs = true,
+}: {
+  property: PropertyCardData;
+  compact?: boolean;
+  hidden?: boolean;
+  specs?: boolean;
+}) {
+  const { operation, price } = operationAndPrice(property);
+  const specs = showSpecs ? propertySpecs(property) : [];
   const Title = compact ? "p" : "h3";
 
   return (
@@ -82,7 +120,7 @@ export function PropertyMeta({
             {property.title}
           </Link>
         </Title>
-        <p className="shrink-0 text-[11px] font-medium whitespace-nowrap text-fg-secondary">
+        <p className={`shrink-0 font-medium whitespace-nowrap text-fg-secondary ${showSpecs ? "text-[11px]" : "text-[13px]"}`}>
           {operation} <span className="px-0.5 text-fg-disabled" aria-hidden="true">|</span> {price}
         </p>
       </div>
@@ -101,29 +139,35 @@ export function PropertyMeta({
   );
 }
 
-// Tarjeta del listado público: la foto manda; abajo, el pie compartido.
-// Sin caja, bordes ni nada encima de la foto. Toda la tarjeta lleva a la
-// ficha (link estirado sobre el título).
-export default function PropertyCard({ property }: PropertyCardProps) {
+// Tarjeta del listado público: la foto manda, con las características
+// como badges en su borde inferior; abajo, nombre, operación y precio.
+// Toda la tarjeta lleva a la ficha (link estirado sobre el título).
+export default function PropertyCard({
+  property,
+  variant = "default",
+  sizes = "(min-width: 1280px) 30vw, (min-width: 640px) 50vw, 100vw",
+}: PropertyCardProps) {
   const cover = cardImages(property.property_images as OrderedImage[] | null)[0];
+  const feature = variant === "feature";
 
   return (
-    <article className="group relative flex flex-col">
-      <div className="relative aspect-4/3 w-full overflow-hidden rounded-[8px] bg-sunken ring-ring ring-offset-2 ring-offset-background group-has-[a:focus-visible]:ring-2">
+    <article className={`group relative flex flex-col ${feature ? "h-full" : ""}`}>
+      <div
+        className={`relative w-full overflow-hidden rounded-[8px] bg-sunken ring-ring ring-offset-2 ring-offset-background group-has-[a:focus-visible]:ring-2 ${
+          feature ? "aspect-4/3 lg:aspect-auto lg:min-h-0 lg:flex-1" : "aspect-4/3"
+        }`}
+      >
         {cover ? (
-          <CardImage
-            src={cover}
-            alt={property.title || "Propiedad"}
-            sizes="(min-width: 1280px) 30vw, (min-width: 640px) 50vw, 100vw"
-          />
+          <CardImage src={cover} alt={property.title || "Propiedad"} sizes={sizes} />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-fg-disabled">
             <ImageOff className="h-6 w-6" aria-hidden="true" />
           </div>
         )}
+        <SpecBadges property={property} />
       </div>
 
-      <PropertyMeta property={property} />
+      <PropertyMeta property={property} specs={false} />
     </article>
   );
 }

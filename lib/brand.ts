@@ -3,25 +3,28 @@
 // WhatsApp) sale de acá, así cada inmobiliaria se configura por env sin
 // tocar código. Los valores por defecto son los de la demo.
 export const BRAND = {
-  name: process.env.NEXT_PUBLIC_BRAND_NAME ?? "Lumen Propiedades",
+  name: process.env.NEXT_PUBLIC_BRAND_NAME ?? "Umbral Propiedades",
   tagline: process.env.NEXT_PUBLIC_BRAND_TAGLINE ?? "Negocios inmobiliarios",
   // URL absoluta a un logo (PNG/JPG). Opcional: si falta, se usa el nombre.
   logoUrl: process.env.NEXT_PUBLIC_BRAND_LOGO_URL ?? null,
   // Handle de Instagram sin "@", para el copy de las piezas.
   instagram: process.env.NEXT_PUBLIC_BRAND_INSTAGRAM ?? null,
   siteUrl:
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://lumenpropiedades.vercel.app",
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://umbralpropiedades.vercel.app",
   // Contacto de la inmobiliaria para el sitio público. WhatsApp en
   // formato internacional, solo dígitos (ej. 5491154702118).
   whatsapp: process.env.NEXT_PUBLIC_BRAND_WHATSAPP ?? "541154702118",
-  email: process.env.NEXT_PUBLIC_BRAND_EMAIL ?? "info@lumenpropiedades.com.ar",
+  email: process.env.NEXT_PUBLIC_BRAND_EMAIL ?? "hola@umbralpropiedades.com.ar",
   // Teléfono tal como se muestra en el sitio.
   phoneDisplay:
     process.env.NEXT_PUBLIC_BRAND_PHONE_DISPLAY ?? "+54 11 5470-2118",
   // Dirección de la oficina. Opcional: si falta, no se muestra.
   address: process.env.NEXT_PUBLIC_BRAND_ADDRESS ?? null,
-  // Color primario de la pieza (hex). Default: el navy del design system.
-  color: process.env.NEXT_PUBLIC_BRAND_COLOR ?? "#111a2e",
+  // Color primario de la pieza (hex). Default: el negro del sitio público.
+  color: process.env.NEXT_PUBLIC_BRAND_COLOR ?? "#151515",
+  // Acento de la marca (hex): el arco del logo y del favicon. Default: el
+  // naranja del sitio público (--brand-pop en globals.css).
+  accent: process.env.NEXT_PUBLIC_BRAND_ACCENT ?? "#ff5a1f",
 };
 
 export function formatPrice(

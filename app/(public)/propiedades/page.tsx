@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import Link from "next/link";
-import { MessageCircle } from "lucide-react";
+import { BellRing } from "lucide-react";
 import { createClientServer } from "@/lib/supabase";
-import { whatsappLink } from "@/lib/brand";
 import PropertyCard from "@/features/properties/PropertyCard";
 import { PropertyCardData } from "@/app/types/entities";
-import { ListingToolbar } from "@/features/properties/ListingToolbar";
+import { ListingBar } from "@/features/properties/ListingBar";
 import { PublicMapView } from "@/features/properties/PublicMapView";
 import type { MapProperty } from "@/features/properties/PublicPropertiesMap";
 import { SplitHeading, StaggerItem } from "@/features/public/v2/motion";
-import { CONTACT_CTA_LABEL } from "@/features/public/v2/content";
+import { SearchAlertDialog } from "@/features/public/v2/SearchAlert";
+import { AlertTile } from "@/features/public/v2/AlertTile";
+import { pickCriteria } from "@/features/public/searchCriteria";
 import { getUniqueLocations } from "@/shared/utils/getLocations";
 
 export const revalidate = 60;
@@ -133,78 +135,69 @@ export default async function PropiedadesPage({
     console.error("Error fetching properties:", error);
   }
 
-  // Ciudades con cantidad: sugerencias del buscador y opciones de Ubicación.
-  const cities = [...new Set(locations.map((l) => l.city))].sort((a, b) => a.localeCompare(b, "es"));
 
   const properties: PropertyCardData[] = (data as PropertyCardData[]) || [];
   const view = searchParams.vista === "mapa" ? "mapa" : "lista";
   const count = properties.length;
 
-  // Encabezado y barra iguales en lista y mapa: al cambiar de vista solo
-  // cambia el contenido de abajo.
-  const header = (compact: boolean) => (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
-        <SplitHeading
-          as="h1"
-          trigger="mount"
-          text={titleFor(searchParams.tipo)}
-          className={`font-display leading-[0.95] font-normal tracking-[-0.03em] text-foreground ${
-            compact ? "text-4xl md:text-5xl" : "text-5xl md:text-6xl lg:text-[5rem]"
-          }`}
-        />
-        <p className="pb-1 text-sm text-muted-foreground tabular-nums" aria-live="polite">
-          <span className="font-semibold text-foreground">{count}</span> {count === 1 ? "propiedad" : "propiedades"}
-          {q ? ` para “${q}”` : ""}
-        </p>
-      </div>
+  const filterOptions = {
+    types: (propertyTypes ?? []) as PropertyType[],
+    amenities: (amenities ?? []) as Amenity[],
+    locations,
+  };
 
-      <ListingToolbar
-        types={(propertyTypes ?? []) as PropertyType[]}
-        amenities={(amenities ?? []) as Amenity[]}
-        cities={cities}
-        locations={locations}
-        view={view}
-      />
-    </div>
+  // Búsqueda actual para la alerta "Avisame cuando entre algo así" (se
+  // puede ajustar dentro del diálogo con las mismas opciones de filtros).
+  const criteria = pickCriteria(searchParams);
+
+  const title = (
+    <SplitHeading
+      as="h1"
+      trigger="mount"
+      text={titleFor(searchParams.tipo)}
+      className="font-display text-4xl leading-[0.95] font-medium tracking-[-0.035em] text-foreground md:text-5xl lg:text-6xl"
+    />
   );
+
+  const bar = <ListingBar {...filterOptions} count={count} query={q} view={view} />;
 
   const emptyState = (
     <div className="flex flex-col items-start gap-6 rounded-4xl bg-surface-alt px-6 py-16 md:items-center md:px-12 md:py-24 md:text-center">
-      <h2 className="max-w-[20ch] font-display text-4xl leading-[1] font-normal tracking-[-0.03em] text-foreground md:text-5xl">
+      <h2 className="max-w-[20ch] font-display text-4xl leading-[1] font-medium tracking-[-0.035em] text-foreground md:text-5xl">
         No encontramos propiedades con esos filtros
       </h2>
       <p className="max-w-[48ch] text-lg leading-relaxed text-fg-secondary">
-        Probá quitando algún filtro o buscando otra zona. Si no aparece, contanos qué necesitás y te avisamos cuando entre.
+        Probá quitando algún filtro o buscando otra zona. O dejanos esta búsqueda y te avisamos apenas entre algo así.
       </p>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 md:justify-center">
+        <SearchAlertDialog criteria={criteria} options={filterOptions}>
+          <button
+            type="button"
+            className="inline-flex h-[52px] cursor-pointer items-center gap-2 rounded-full bg-pop px-7 text-base font-semibold whitespace-nowrap text-foreground transition-[background-color,transform] hover:bg-pop-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.98]"
+          >
+            <BellRing className="h-4 w-4" aria-hidden="true" />
+            Avisame cuando entre
+          </button>
+        </SearchAlertDialog>
         <Link
           href="/propiedades"
-          className="inline-flex h-[52px] items-center rounded-full bg-main px-7 text-base font-semibold whitespace-nowrap text-primary-foreground transition-[background-color,transform] hover:bg-main-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.98]"
+          className="inline-flex h-[52px] items-center rounded-full border border-border-strong px-7 text-base font-semibold whitespace-nowrap text-foreground transition-colors hover:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           Ver todas las propiedades
         </Link>
-        <a
-          href={whatsappLink("Hola, estoy buscando una propiedad y no encontré lo que necesito en la web.")}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex h-[52px] items-center gap-2 rounded-full border border-border-strong px-7 text-base font-semibold whitespace-nowrap text-foreground transition-colors hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <MessageCircle className="h-5 w-5" aria-hidden="true" />
-          {CONTACT_CTA_LABEL}
-        </a>
       </div>
     </div>
   );
 
-  // Vista mapa: el encabezado queda arriba y el bloque lista + mapa mide
-  // casi toda la pantalla, así el mapa tiene alto de verdad. Al bajar un
-  // poco queda entero a la vista (el header se esconde al scrollear).
+  // Vista mapa: los filtros van en el panel que abre la barra (igual que
+  // en la lista), así el mapa tiene ancho. El bloque lista + mapa mide casi
+  // toda la pantalla; al bajar un poco queda entero a la vista.
   if (view === "mapa") {
     return (
       <div className="w-full bg-background">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 pt-6 pb-10 md:px-8 md:pt-8">
-          {header(true)}
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-8 pb-10 md:px-8">
+          {title}
+          {bar}
           <div key="mapa" className="site-fade relative h-[calc(100dvh-6rem)] min-h-[560px]">
             {count > 0 ? (
               <PublicMapView properties={(data ?? []) as unknown as MapProperty[]} />
@@ -219,23 +212,35 @@ export default async function PropiedadesPage({
 
   return (
     <div className="w-full bg-background">
-      <div className="mx-auto w-full max-w-7xl px-6 pt-10 pb-24 md:px-8 md:pt-14 lg:pb-36">
-        {header(false)}
+      <div className="mx-auto w-full max-w-7xl px-4 pt-8 pb-28 md:px-8 md:pt-12 lg:pb-32">
+        {title}
 
-        <section key="lista" aria-label="Resultados" className="site-fade mt-12 md:mt-14">
-          {count > 0 ? (
-            <ul className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-              {properties.map((property, i) => (
-                <StaggerItem as="li" key={property.id} index={i}>
-                  <PropertyCard property={property} />
-                </StaggerItem>
-              ))}
-            </ul>
-          ) : (
-            emptyState
-          )}
+        <section key="lista" aria-label="Resultados" className="site-fade mt-8 md:mt-10">
+          {bar}
+          <div className="mt-8">
+            {count > 0 ? (
+              <ul className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                {properties.map((property, i) => (
+                  <Fragment key={property.id}>
+                    {i === CTA_POSITION && <AlertTile criteria={criteria} options={filterOptions} />}
+                    <StaggerItem as="li" index={i}>
+                      <PropertyCard property={property} />
+                    </StaggerItem>
+                  </Fragment>
+                ))}
+              </ul>
+            ) : (
+              emptyState
+            )}
+          </div>
         </section>
       </div>
     </div>
   );
 }
+
+// Posición de la tarjeta de alerta dentro de la grilla: después de la
+// quinta propiedad (cierra la segunda fila en 3 columnas). Corta la lista
+// justo donde el usuario empieza a dudar, sin tapar los primeros
+// resultados.
+const CTA_POSITION = 5;

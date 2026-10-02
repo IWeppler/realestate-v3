@@ -38,6 +38,7 @@ import {
 } from "@/features/public/v2/PropertyContact";
 import { Reveal } from "@/features/public/v2/Reveal";
 import { SplitHeading, StaggerItem } from "@/features/public/v2/motion";
+import { zoneSlug } from "@/features/public/zones";
 
 // --- Carga de Datos Principal ---
 async function getPropertyDetails(
@@ -147,7 +148,7 @@ export async function generateMetadata({
     property.description?.replace(/\s+/g, " ").substring(0, 120),
   ]
     .filter(Boolean)
-    .join(" — ");
+    .join(". ");
 
   return {
     title: `${property.title} | ${price}`,
@@ -179,16 +180,17 @@ const STATUS_LABELS: Record<string, string> = {
 
 function SectionTitle({ id, children }: { id: string; children: string }) {
   return (
-    <h2 id={id} className="font-display text-3xl leading-[1] font-normal tracking-[-0.02em] text-foreground md:text-4xl">
+    <h2 id={id} className="font-display text-3xl leading-[1] font-medium tracking-[-0.03em] text-foreground md:text-4xl">
       {children}
     </h2>
   );
 }
 
 // --- Página Principal ---
-// Ficha de propiedad: encabezado editorial, galería, contenido a la
-// izquierda y tarjeta de contacto fija a la derecha (en mobile, barra
-// inferior con precio y acciones). Cierra con propiedades parecidas.
+// Ficha de propiedad: galería en mosaico, encabezado, contenido a la
+// izquierda y tarjeta de contacto fija a la derecha (en mobile, resumen
+// de precio y barra inferior con acciones). Cierra con propiedades
+// parecidas.
 export default async function PropertyPage({
   params: paramsPromise,
 }: {
@@ -266,73 +268,83 @@ export default async function PropertyPage({
       <ViewCounter propertyId={property.id} />
       <PropertyJsonLd property={property} />
 
-      <div className="mx-auto w-full max-w-7xl px-6 pt-8 md:px-8 md:pt-10">
-        {/* --- Portada: foto grande, presentación y tira de fotos --- */}
+      <div className="mx-auto w-full max-w-7xl px-4 pt-6 md:px-8 md:pt-8">
         <Link
           href="/propiedades"
-          className="mb-6 inline-flex items-center gap-2 rounded-full text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="mb-5 inline-flex items-center gap-2 rounded-full text-sm font-medium text-fg-secondary transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Todas las propiedades
         </Link>
 
-        <PropertyMedia images={images} title={title}>
-          <header className="mt-10 grid grid-cols-1 gap-8 md:mt-14 lg:grid-cols-12 lg:items-end lg:gap-16">
-            <div className="min-w-0 lg:col-span-7">
-              <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">{statusDisplay}</span>
-                {typeName ? ` · ${typeName}` : ""}
-              </p>
-              <SplitHeading
-                as="h1"
-                trigger="mount"
-                delay={0.3}
-                text={title}
-                className="mt-4 font-display text-5xl leading-[0.95] font-normal tracking-[-0.03em] text-balance text-foreground md:text-6xl lg:text-7xl"
-              />
-              {locationString && (
-                <p className="site-rise mt-5 flex items-start gap-2 text-lg text-fg-secondary [--rise-delay:650ms]">
-                  <MapPin className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
-                  {locationString}
-                </p>
-              )}
-            </div>
+        {/* --- Galería en mosaico --- */}
+        <PropertyMedia images={images} title={title} />
 
-            <div className="site-rise flex flex-col gap-5 lg:col-span-5 lg:items-end lg:text-right [--rise-delay:500ms]">
-              <div>
-                <p className="text-sm text-muted-foreground">{priceLabel}</p>
-                <p className="mt-1 font-display text-5xl leading-none font-normal tracking-[-0.02em] text-foreground md:text-6xl">
-                  {priceDisplay}
-                </p>
-                {expensasDisplay && <p className="mt-2 text-sm text-muted-foreground">+ {expensasDisplay} de expensas</p>}
-              </div>
-              {headlineSpecs.length > 0 && (
-                <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-fg-secondary lg:justify-end">
-                  {headlineSpecs.map(({ key, icon: Icon, text }) => (
-                    <li key={key} className="inline-flex items-center gap-1.5">
-                      <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                      {text}
-                    </li>
-                  ))}
-                </ul>
+        {/* --- Encabezado: estado y tipo, título y ubicación. El precio
+            vive en la tarjeta fija (desktop) y en el resumen (móvil). --- */}
+        <header className="mt-8 flex flex-col gap-6 md:mt-10 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
+          <div className="max-w-4xl min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`inline-flex h-8 items-center rounded-full px-3.5 text-sm font-semibold ${
+                  available ? "bg-pop text-foreground" : "bg-main text-primary-foreground"
+                }`}
+              >
+                {statusDisplay}
+              </span>
+              {typeName && (
+                <span className="inline-flex h-8 items-center rounded-full border border-border-strong px-3.5 text-sm font-medium text-foreground">
+                  {typeName}
+                </span>
               )}
-              <div className="flex items-center gap-4 border-t border-border pt-5 lg:w-full lg:justify-end">
-                <span className="text-xs text-muted-foreground tabular-nums">Cód. {refCode}</span>
-                <ShareButton title={title} price={priceDisplay} location={locationString} />
-              </div>
             </div>
-          </header>
-        </PropertyMedia>
+            <SplitHeading
+              as="h1"
+              trigger="mount"
+              delay={0.3}
+              text={title}
+              className="mt-5 font-display text-4xl leading-[0.95] font-medium tracking-[-0.035em] text-balance text-foreground md:text-5xl lg:text-6xl"
+            />
+            {locationString && (
+              <p className="site-rise mt-4 flex items-start gap-2 text-lg text-fg-secondary [--rise-delay:600ms]">
+                <MapPin className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
+                {locationString}
+              </p>
+            )}
+          </div>
+
+          <div className="flex shrink-0 items-center gap-4">
+            <span className="text-xs text-fg-secondary tabular-nums">Cód. {refCode}</span>
+            <ShareButton title={title} price={priceDisplay} location={locationString} />
+          </div>
+        </header>
+
+        {/* --- Resumen de precio en móvil (en desktop está en la tarjeta) --- */}
+        <div className="mt-8 rounded-3xl bg-card p-5 lg:hidden">
+          <p className="text-sm text-fg-secondary">{priceLabel}</p>
+          <p className="mt-1 font-display text-4xl leading-none font-medium tracking-[-0.035em] text-foreground">{priceDisplay}</p>
+          {expensasDisplay && <p className="mt-2 text-sm text-fg-secondary">+ {expensasDisplay} de expensas</p>}
+          {headlineSpecs.length > 0 && (
+            <ul className="mt-4 flex flex-wrap gap-1.5">
+              {headlineSpecs.map(({ key, icon: Icon, text }) => (
+                <li key={key} className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm text-foreground">
+                  <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+                  {text}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         {/* --- Contenido + contacto --- */}
-        <div className="mt-14 grid grid-cols-1 gap-16 lg:mt-20 lg:grid-cols-12 lg:gap-16">
-          <div className="flex flex-col gap-20 lg:col-span-7">
+        <div className="mt-12 grid grid-cols-1 gap-16 lg:mt-16 lg:grid-cols-12 lg:gap-12 xl:gap-16">
+          <div className="flex min-w-0 flex-col gap-16 lg:col-span-7 xl:col-span-8">
             <section aria-labelledby="facts-title">
               <SectionTitle id="facts-title">La propiedad de un vistazo</SectionTitle>
-              <div className="mt-10">
+              <div className="mt-8">
                 <KeyFacts facts={keyFacts} />
               </div>
-              <div className="mt-8 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 <FactChip icon={Building} label="Tipo" value={typeName} />
                 <FactChip icon={Tag} label="Precio por m²" value={pricePerM2} />
                 <FactChip icon={Receipt} label="Expensas" value={expensasDisplay} />
@@ -343,30 +355,29 @@ export default async function PropertyPage({
             <Reveal>
               <section aria-labelledby="desc-title">
                 <SectionTitle id="desc-title">Descripción</SectionTitle>
-                <div className="mt-8">
+                <div className="mt-6">
                   <DescriptionWithReadMore text={property.description || ""} />
                 </div>
               </section>
             </Reveal>
 
             {amenities.length > 0 && (
-              <section aria-labelledby="amenities-title">
-                <SectionTitle id="amenities-title">Características</SectionTitle>
-                <ul className="mt-8 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
-                  {amenities.map((name, i) => (
-                    <StaggerItem
-                      as="li"
-                      key={name}
-                      index={i}
-                      columns={2}
-                      className="flex items-center gap-3 border-b border-border pb-4 text-base text-foreground"
-                    >
-                      <Check className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                      {name}
-                    </StaggerItem>
-                  ))}
-                </ul>
-              </section>
+              <Reveal>
+                <section aria-labelledby="amenities-title">
+                  <SectionTitle id="amenities-title">Características</SectionTitle>
+                  <ul className="mt-6 flex flex-wrap gap-2">
+                    {amenities.map((name) => (
+                      <li
+                        key={name}
+                        className="inline-flex items-center gap-2 rounded-full bg-card px-4 py-2.5 text-[15px] font-medium text-foreground"
+                      >
+                        <Check className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+                        {name}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              </Reveal>
             )}
 
             <Reveal>
@@ -375,27 +386,36 @@ export default async function PropertyPage({
                   <div>
                     <SectionTitle id="map-title">Ubicación</SectionTitle>
                     {locationString && <p className="mt-3 text-base text-fg-secondary">{locationString}</p>}
+                    {city && (
+                      <Link
+                        href={`/zonas/${zoneSlug(city)}`}
+                        className="group mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-foreground underline-offset-4 hover:underline"
+                      >
+                        Más propiedades en {city}
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                      </Link>
+                    )}
                   </div>
                   {hasCoords && (
                     <a
                       href={`https://www.google.com/maps/dir/?api=1&destination=${property.latitude},${property.longitude}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex h-10 items-center gap-2 rounded-full border border-border-strong bg-card px-4 text-sm font-medium text-foreground transition-colors hover:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Navigation className="h-4 w-4" aria-hidden="true" />
                       Cómo llegar
                     </a>
                   )}
                 </div>
-                <div className="mt-8 h-[380px] w-full overflow-hidden rounded-3xl bg-sunken md:h-[460px]">
+                <div className="mt-6 h-[360px] w-full overflow-hidden rounded-3xl bg-sunken md:h-[440px]">
                   <ClientPropertyMap lat={property.latitude} lng={property.longitude} title={property.title} />
                 </div>
               </section>
             </Reveal>
 
             <Reveal>
-              <section aria-labelledby="inquiry-title" className="rounded-4xl bg-surface-alt p-6 md:p-10">
+              <section aria-labelledby="inquiry-title" className="rounded-3xl bg-card p-6 md:p-8">
                 <SectionTitle id="inquiry-title">Consultá por esta propiedad</SectionTitle>
                 <p className="mt-3 mb-8 text-base text-fg-secondary">Tu consulta le llega directo al asesor a cargo.</p>
                 <PropertyInquiryForm propertyId={property.id} title={title} />
@@ -403,8 +423,8 @@ export default async function PropertyPage({
             </Reveal>
           </div>
 
-          <aside className="hidden lg:col-span-5 lg:block">
-            <div className="sticky top-28">
+          <aside className="hidden lg:col-span-5 lg:block xl:col-span-4">
+            <div className="sticky top-24">
               <PropertyContactCard
                 propertyId={property.id}
                 title={title}
@@ -421,23 +441,23 @@ export default async function PropertyPage({
 
       {/* --- Parecidas --- */}
       {recommendedProperties.length > 0 && (
-        <section aria-labelledby="reco-title" className="mt-24 w-full bg-surface-alt lg:mt-36">
-          <div className="mx-auto w-full max-w-7xl px-6 py-20 md:px-8 lg:py-28">
+        <section aria-labelledby="reco-title" className="mt-24 w-full bg-surface-alt lg:mt-32">
+          <div className="mx-auto w-full max-w-7xl px-4 py-20 md:px-8 lg:py-28">
             <div className="flex flex-wrap items-end justify-between gap-6">
               <SplitHeading
                 id="reco-title"
                 text="También te puede interesar"
-                className="max-w-[16ch] font-display text-4xl leading-[0.95] font-normal tracking-[-0.03em] text-foreground md:text-5xl"
+                className="max-w-[16ch] font-display text-4xl leading-[0.95] font-medium tracking-[-0.035em] text-foreground md:text-5xl"
               />
               <Link
                 href={isRent ? "/propiedades?tipo=alquiler" : "/propiedades?tipo=venta"}
-                className="group inline-flex items-center gap-1.5 text-sm font-semibold text-foreground underline-offset-4 hover:underline"
+                className="group inline-flex h-11 items-center gap-2 rounded-full border border-border-strong px-5 text-sm font-semibold text-foreground transition-colors hover:border-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 Ver todas
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>
             </div>
-            <ul className="mt-12 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-12 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
               {recommendedProperties.map((p, i) => (
                 <StaggerItem as="li" key={p.id} index={i}>
                   <PropertyCard property={p} />

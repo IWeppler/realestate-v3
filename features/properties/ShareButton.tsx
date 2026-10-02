@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
-import { Check, Link as LinkIcon, Share2, MessageCircle } from "lucide-react";
+import { Check, Link as LinkIcon, Share2 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { toast } from "sonner";
 
 import { Button } from "@/shared/components/ui/button";
@@ -75,12 +76,8 @@ export function ShareButton({ title, price, location, url }: ShareButtonProps) {
 
   if (canNativeShare) {
     return (
-      <Button
-        variant="outline"
-        className="gap-2 cursor-pointer"
-        onClick={handleNativeShare}
-      >
-        <Share2 className="w-4 h-4 text-zinc-500" />
+      <Button variant="outline" className="h-10 cursor-pointer gap-2 rounded-full border-border-strong bg-card px-4 text-sm font-medium text-foreground shadow-none hover:border-foreground hover:bg-card" onClick={handleNativeShare}>
+        <Share2 className="h-4 w-4" aria-hidden="true" />
         Compartir
       </Button>
     );
@@ -89,22 +86,22 @@ export function ShareButton({ title, price, location, url }: ShareButtonProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="gap-2 cursor-pointer">
+        <Button variant="outline" className="h-10 cursor-pointer gap-2 rounded-full border-border-strong bg-card px-4 text-sm font-medium text-foreground shadow-none hover:border-foreground hover:bg-card">
           {copied ? (
-            <Check className="w-4 h-4 text-green-600" />
+            <Check className="h-4 w-4" aria-hidden="true" />
           ) : (
-            <Share2 className="w-4 h-4 text-zinc-500" />
+            <Share2 className="h-4 w-4" aria-hidden="true" />
           )}
           {copied ? "¡Copiado!" : "Compartir"}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleWhatsApp}>
-          <MessageCircle className="mr-2 h-4 w-4 text-green-600" />
+      <DropdownMenuContent align="end" className="rounded-xl p-1">
+        <DropdownMenuItem onClick={handleWhatsApp} className="cursor-pointer rounded-lg py-2">
+          <FaWhatsapp className="mr-2 h-4 w-4" aria-hidden="true" />
           WhatsApp
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleCopyLink}>
-          <LinkIcon className="mr-2 h-4 w-4" />
+        <DropdownMenuItem onClick={handleCopyLink} className="cursor-pointer rounded-lg py-2">
+          <LinkIcon className="mr-2 h-4 w-4" aria-hidden="true" />
           Copiar enlace
         </DropdownMenuItem>
       </DropdownMenuContent>

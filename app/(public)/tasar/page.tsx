@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import { ChartColumn, Hammer, MapPin, Ruler } from "lucide-react";
 import { createClientServer } from "@/lib/supabase";
 import { AppraisalForm } from "@/features/public/v2/AppraisalForm";
 import { APPRAISAL_STEPS } from "@/features/public/v2/content";
@@ -20,10 +22,10 @@ export const metadata: Metadata = {
 };
 
 const FACTORS = [
-  { title: "Ubicación y entorno", body: "Barrio, accesos, servicios y cómo se mueve la demanda en la zona." },
-  { title: "Estado y antigüedad", body: "Terminaciones, mantenimiento y lo que haría falta arreglar." },
-  { title: "Superficie", body: "Metros cubiertos, semicubiertos y del terreno." },
-  { title: "Comparables", body: "Propiedades parecidas publicadas y vendidas cerca." },
+  { icon: MapPin, title: "Ubicación y entorno", body: "Barrio, accesos, servicios y cómo se mueve la demanda en la zona." },
+  { icon: Hammer, title: "Estado y antigüedad", body: "Terminaciones, mantenimiento y lo que haría falta arreglar." },
+  { icon: Ruler, title: "Superficie", body: "Metros cubiertos, semicubiertos y del terreno." },
+  { icon: ChartColumn, title: "Comparables", body: "Propiedades parecidas publicadas y vendidas cerca." },
 ];
 
 const FAQ = [
@@ -48,6 +50,10 @@ const FAQ = [
     a: "Casas, departamentos, PH, locales, lotes y campos, tanto para venta como para alquiler.",
   },
 ];
+
+// Alto de cada arco de "Cómo funciona" en desktop: suben como una
+// escalera, del primer contacto al informe.
+const STEP_HEIGHTS = ["sm:h-[22rem]", "sm:h-[26rem]", "sm:h-[30rem]"];
 
 async function getData() {
   const supabase = await createClientServer();
@@ -79,101 +85,147 @@ export default async function TasarPage() {
 
   return (
     <div className="flex w-full flex-col">
-      {/* --- Hero: propuesta + pasos a la izquierda, formulario a la derecha.
-          El formulario se ve al entrar: es la acción principal de la página.
-          En mobile el orden es titular → formulario → pasos; en desktop los
-          pasos quedan debajo del titular, a la izquierda del formulario. --- */}
-      <section className="w-full bg-background">
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-x-16 gap-y-10 px-6 pt-10 pb-20 md:px-8 md:pt-14 lg:grid-cols-12 lg:grid-rows-[auto_1fr] lg:pb-28">
-          <div className="flex flex-col lg:col-span-5 lg:col-start-1 lg:row-start-1 lg:pt-6">
-            <SplitHeading
-              as="h1"
-              trigger="mount"
-              text="¿Cuánto vale hoy tu propiedad?"
-              className="max-w-[12ch] font-display text-5xl leading-[0.95] font-normal tracking-[-0.03em] text-foreground md:text-6xl lg:text-[5rem]"
-            />
-            <p className="site-rise mt-6 max-w-[40ch] text-xl leading-[1.5] text-fg-secondary [--rise-delay:450ms]">
-              Te hacemos una tasación sin costo, con visita y un informe con comparables de la zona.
-            </p>
-          </div>
+      {/* --- Hero enmarcado (mismo marco que la home): titular abajo a la
+          izquierda sobre la foto y el formulario en tarjeta a la derecha,
+          visible al entrar porque es la acción de la página. --- */}
+      <section className="w-full bg-background p-3 md:p-5 lg:px-10">
+        <div className="relative isolate flex min-h-[calc(100dvh-5.5rem)] w-full overflow-hidden rounded-4xl bg-foreground md:min-h-[calc(100dvh-6.5rem)]">
+          <Image
+            src="/bghero5.jpg"
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 1024px) calc(100vw - 5rem), (min-width: 768px) calc(100vw - 2.5rem), calc(100vw - 1.5rem)"
+            className="site-settle -z-20 object-cover"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10 bg-linear-to-t from-[rgb(21_21_21/0.85)] via-[rgb(21_21_21/0.4)] to-[rgb(21_21_21/0.15)] lg:bg-linear-to-tr lg:via-[rgb(21_21_21/0.3)] lg:to-transparent"
+          />
 
-          <div className="lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1">
-            <div className="site-rise rounded-4xl bg-card p-6 shadow-[0_24px_60px_-36px_rgb(33_44_51/0.35)] md:p-10 [--rise-delay:300ms]">
-              <h2 className="text-xl font-semibold text-foreground">Pedí tu tasación</h2>
-              <p className="mt-1 mb-8 text-sm text-muted-foreground">Te llamamos para coordinar la visita.</p>
+          <div className="mx-auto grid w-full max-w-7xl grid-cols-1 content-end gap-10 px-4 pt-32 pb-6 md:px-8 lg:grid-cols-12 lg:items-end lg:gap-10 lg:pt-12 lg:pb-12">
+            <div className="lg:col-span-6">
+              <SplitHeading
+                as="h1"
+                trigger="mount"
+                delay={0.1}
+                text={"¿Cuánto vale hoy\ntu propiedad?"}
+                className="font-display text-[clamp(2.75rem,5.6vw,5.25rem)] leading-[0.95] font-medium tracking-[-0.035em] text-background"
+              />
+              <p className="site-rise mt-5 max-w-[38ch] text-lg leading-relaxed text-background/85 [--rise-delay:450ms] md:text-xl">
+                Tasación sin costo, con visita y un informe con comparables de la zona.
+              </p>
+            </div>
+
+            <div
+              id="pedir-tasacion"
+              className="site-rise relative z-20 w-full rounded-3xl bg-card p-5 shadow-[0_30px_60px_-30px_rgb(21_21_21/0.55)] [--rise-delay:600ms] sm:max-w-lg md:p-7 lg:col-span-6 lg:max-w-none xl:col-span-5 xl:col-start-8"
+            >
+              <h2 className="font-display text-2xl font-semibold tracking-[-0.02em] text-foreground">Pedí tu tasación</h2>
+              <p className="mt-1 mb-6 text-sm text-fg-secondary">Te llamamos para coordinar la visita.</p>
               <AppraisalForm propertyTypes={propertyTypes} />
             </div>
-          </div>
-
-          <div className="lg:col-span-5 lg:col-start-1 lg:row-start-2">
-            <ol className="flex flex-col">
-              {APPRAISAL_STEPS.map((step, i) => (
-                <StaggerItem
-                  as="li"
-                  key={step.title}
-                  index={i}
-                  columns={APPRAISAL_STEPS.length}
-                  className="grid grid-cols-[2.5rem_1fr] gap-x-4 border-t border-border py-5 last:border-b"
-                >
-                  <span className="pt-0.5 text-sm font-medium text-muted-foreground tabular-nums" aria-hidden="true">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <p className="text-base font-semibold text-foreground">{step.title}</p>
-                    <p className="mt-1 text-sm leading-relaxed text-fg-secondary">{step.body}</p>
-                  </div>
-                </StaggerItem>
-              ))}
-            </ol>
           </div>
         </div>
       </section>
 
-      {/* --- Qué miramos: foto real + factores --- */}
-      <section aria-labelledby="tasar-factors-title" className="w-full bg-surface-alt">
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 py-20 md:px-8 lg:grid-cols-12 lg:gap-16 lg:py-36">
-          {photo?.src && (
-            <Reveal className="lg:col-span-6">
-              <Parallax className="aspect-[4/5] w-full rounded-4xl bg-sunken lg:aspect-[5/6]">
-                <CardImage src={photo.src} alt={photo.title} sizes="(min-width: 1024px) 45vw, 100vw" />
-              </Parallax>
-            </Reveal>
-          )}
+      {/* --- Cómo funciona: tres arcos (el logo es un arco) que suben
+          como una escalera; el último, el informe, en naranja. --- */}
+      <section aria-labelledby="tasar-steps-title" className="w-full bg-background">
+        <div className="mx-auto w-full max-w-7xl px-4 py-20 md:px-8 lg:py-28">
+          <SplitHeading
+            id="tasar-steps-title"
+            text="Cómo funciona"
+            className="font-display text-5xl leading-[0.95] font-medium tracking-[-0.035em] text-foreground md:text-6xl"
+          />
 
-          <div className={photo?.src ? "lg:col-span-6" : "lg:col-span-12"}>
-            <SplitHeading
-              id="tasar-factors-title"
-              text="Qué miramos para tasar"
-              className="max-w-[14ch] font-display text-5xl leading-[0.95] font-normal tracking-[-0.03em] text-foreground md:text-6xl"
-            />
-            <dl className="mt-12 grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2">
-              {FACTORS.map((f, i) => (
-                <StaggerItem key={f.title} index={i} columns={2} className="border-t border-border pt-5">
-                  <dt className="text-base font-semibold text-foreground">{f.title}</dt>
-                  <dd className="mt-2 text-sm leading-relaxed text-fg-secondary">{f.body}</dd>
+          <ol className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-end lg:gap-6">
+            {APPRAISAL_STEPS.map((step, i) => {
+              const last = i === APPRAISAL_STEPS.length - 1;
+              return (
+                <StaggerItem
+                  as="li"
+                  key={step.title}
+                  index={i}
+                  className={`flex flex-col justify-end rounded-3xl p-6 sm:rounded-t-full sm:rounded-b-3xl sm:p-7 ${STEP_HEIGHTS[i]} ${
+                    last ? "bg-pop text-foreground" : "bg-card text-foreground"
+                  }`}
+                >
+                  <span className="font-display text-6xl leading-none font-medium tracking-[-0.04em] tabular-nums" aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <p className="mt-6 font-display text-2xl font-semibold tracking-[-0.02em]">{step.title}</p>
+                  <p className={`mt-2 max-w-[32ch] text-[15px] leading-relaxed ${last ? "text-foreground" : "text-fg-secondary"}`}>
+                    {step.body}
+                  </p>
                 </StaggerItem>
-              ))}
-            </dl>
+              );
+            })}
+          </ol>
+        </div>
+      </section>
+
+      {/* --- Qué miramos: bento con una foto real de la cartera y los
+          cuatro factores alrededor. --- */}
+      <section aria-labelledby="tasar-factors-title" className="w-full bg-surface-alt">
+        <div className="mx-auto w-full max-w-7xl px-4 py-20 md:px-8 lg:py-28">
+          <SplitHeading
+            id="tasar-factors-title"
+            text="Qué miramos para tasar"
+            className="max-w-[14ch] font-display text-5xl leading-[0.95] font-medium tracking-[-0.035em] text-foreground md:text-6xl"
+          />
+
+          <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[repeat(2,minmax(15rem,auto))] lg:gap-5">
+            {photo?.src && (
+              <Reveal className="min-h-72 sm:col-span-2 lg:row-span-2">
+                <Parallax className="h-full min-h-72 w-full rounded-3xl bg-sunken">
+                  <CardImage src={photo.src} alt={photo.title} sizes="(min-width: 1024px) 45vw, 100vw" />
+                </Parallax>
+              </Reveal>
+            )}
+
+            {FACTORS.map((f, i) => {
+              // Una celda oscura rompe la grilla de tarjetas claras.
+              const dark = i === 3;
+              return (
+                <StaggerItem
+                  key={f.title}
+                  index={i}
+                  columns={2}
+                  className={`flex flex-col justify-between gap-10 rounded-3xl p-6 ${
+                    dark ? "bg-main text-primary-foreground" : "bg-card text-foreground"
+                  } ${photo?.src ? "" : "lg:col-span-2"}`}
+                >
+                  <f.icon className={`h-7 w-7 ${dark ? "text-pop" : "text-foreground"}`} strokeWidth={1.5} aria-hidden="true" />
+                  <div>
+                    <p className="font-display text-2xl font-semibold tracking-[-0.02em]">{f.title}</p>
+                    <p className={`mt-2 text-[15px] leading-relaxed ${dark ? "text-primary-foreground/80" : "text-fg-secondary"}`}>
+                      {f.body}
+                    </p>
+                  </div>
+                </StaggerItem>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* --- Preguntas frecuentes --- */}
       <section aria-labelledby="tasar-faq-title" className="w-full bg-background">
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-12 px-6 py-20 md:px-8 lg:grid-cols-12 lg:gap-16 lg:py-36">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-12 px-4 py-20 md:px-8 lg:grid-cols-12 lg:gap-16 lg:py-28">
           <div className="lg:col-span-4">
             <SplitHeading
               id="tasar-faq-title"
               text="Preguntas frecuentes"
-              className="max-w-[10ch] font-display text-5xl leading-[0.95] font-normal tracking-[-0.03em] text-foreground md:text-6xl"
+              className="max-w-[10ch] font-display text-5xl leading-[0.95] font-medium tracking-[-0.035em] text-foreground md:text-6xl"
             />
           </div>
 
           <Reveal delay={0.15} className="lg:col-span-8">
-            <Accordion type="single" collapsible defaultValue="faq-0" className="border-t border-border">
+            <Accordion type="single" collapsible defaultValue="faq-0" className="border-t-2 border-foreground">
               {FAQ.map((item, i) => (
-                <AccordionItem key={item.q} value={`faq-${i}`} className="border-b border-border">
-                  <AccordionTrigger className="py-6 text-left text-lg font-semibold text-foreground hover:no-underline md:text-xl">
+                <AccordionItem key={item.q} value={`faq-${i}`} className="border-b border-border-strong">
+                  <AccordionTrigger className="py-6 text-left font-display text-xl font-medium tracking-[-0.01em] text-foreground hover:no-underline md:text-2xl">
                     {item.q}
                   </AccordionTrigger>
                   <AccordionContent className="max-w-[60ch] pb-6 text-base leading-relaxed text-fg-secondary">

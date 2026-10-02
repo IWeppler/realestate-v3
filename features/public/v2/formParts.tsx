@@ -2,7 +2,7 @@
 // etiqueta arriba, ayuda opcional al lado, error debajo del campo.
 
 export const inputClass =
-  "h-12 w-full rounded-xl border border-input bg-background px-4 text-base text-foreground transition-colors placeholder:text-fg-disabled hover:border-border-strong focus:border-foreground focus:ring-3 focus:ring-ring/15 focus:outline-none aria-invalid:border-destructive";
+  "h-12 w-full rounded-xl border border-input bg-background px-4 text-base text-foreground transition-colors placeholder:text-muted-foreground hover:border-border-strong focus:border-foreground focus:ring-3 focus:ring-ring/15 focus:outline-none aria-invalid:border-destructive";
 
 export const submitClass =
   "group inline-flex h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-main px-8 text-lg font-semibold text-primary-foreground transition-[background-color,transform] hover:bg-main-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.99] disabled:cursor-wait disabled:opacity-80 sm:w-fit";

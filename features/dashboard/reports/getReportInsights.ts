@@ -50,7 +50,7 @@ function sourceKey(source: string | null): string {
   if (["MERCADOLIBRE", "MERCADO_LIBRE", "ML"].includes(normalized)) return "MERCADOLIBRE";
   if (["WHATSAPP", "WHATSAPP_DIRECTO", "WA"].includes(normalized)) return "WHATSAPP";
   if (["CARTEL", "OFICINA", "CARTEL_OFICINA"].includes(normalized)) return "CARTEL_OFICINA";
-  if (["WEB", "CONTACTO", "BOOKING", "SITIO_WEB"].includes(normalized)) return "WEB";
+  if (["WEB", "CONTACTO", "BOOKING", "SITIO_WEB", "ALERTA_BUSQUEDA"].includes(normalized)) return "WEB";
   return "OTROS";
 }
 

@@ -1,114 +1,97 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Images } from "lucide-react";
 import { Lightbox } from "@/features/properties/ImageGallery";
 import { CardImage } from "@/features/properties/CardImage";
 import { EASE } from "@/features/public/v2/motion";
 
-// Portada de la ficha: la primera foto grande (se abre desde un recorte al
-// cargar y baja más lento al scrollear), la presentación de la propiedad
-// (children, viene del servidor) y una tira deslizable con el resto de
-// las fotos. Cualquier foto abre el lightbox en su posición.
-export function PropertyMedia({
-  images,
-  title,
-  children,
-}: {
-  images: string[];
-  title: string;
-  children: React.ReactNode;
-}) {
+// Celdas del mosaico según la cantidad de fotos (4 columnas x 2 filas en
+// desktop), así nunca queda un hueco: la principal siempre manda.
+const SPANS: Record<number, string[]> = {
+  1: ["md:col-span-4 md:row-span-2"],
+  2: ["md:col-span-2 md:row-span-2", "md:col-span-2 md:row-span-2"],
+  3: ["md:col-span-2 md:row-span-2", "md:col-span-2", "md:col-span-2"],
+  4: ["md:col-span-2 md:row-span-2", "md:col-span-2", "md:col-span-1", "md:col-span-1"],
+  5: ["md:col-span-2 md:row-span-2", "md:col-span-1", "md:col-span-1", "md:col-span-1", "md:col-span-1"],
+};
+
+// Galería de la ficha: mosaico con la foto principal grande y hasta
+// cuatro más a su lado (en móvil, solo la principal). Cualquier foto abre
+// el lightbox en su posición; el botón "Ver las N fotos" lo abre desde la
+// primera. Entra con un recorte que se abre, una sola vez al cargar.
+export function PropertyMedia({ images, title }: { images: string[]; title: string }) {
   const [openAt, setOpenAt] = useState<number | null>(null);
   const [index, setIndex] = useState(0);
   const reduce = useReducedMotion();
-  const coverRef = useRef<HTMLButtonElement>(null);
-  const { scrollYProgress } = useScroll({ target: coverRef, offset: ["start start", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
 
   const open = (i: number) => {
     setIndex(i);
     setOpenAt(i);
   };
 
-  const [cover, ...rest] = images;
+  if (images.length === 0) {
+    return (
+      <div className="flex aspect-[16/9] w-full flex-col items-center justify-center gap-2 rounded-4xl bg-sunken text-fg-secondary md:aspect-[21/9]">
+        <Images className="h-8 w-8 opacity-50" aria-hidden="true" />
+        Todavía no hay fotos de esta propiedad
+      </div>
+    );
+  }
+
+  const shown = images.slice(0, 5);
+  const spans = SPANS[shown.length];
 
   return (
     <>
-      {cover ? (
-        <motion.button
-          ref={coverRef}
-          type="button"
-          onClick={() => open(0)}
-          aria-label={`Ver las ${images.length} fotos de ${title}`}
-          className="group relative block aspect-[4/3] w-full cursor-zoom-in overflow-hidden rounded-4xl bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background md:aspect-[16/9] lg:aspect-auto lg:h-[min(46rem,calc(100dvh-10rem))]"
-          initial={reduce ? false : { clipPath: "inset(6% 5% 0% 5% round 40px)" }}
-          animate={{ clipPath: "inset(0% 0% 0% 0% round 40px)" }}
-          transition={{ duration: 1.3, ease: EASE }}
+      <motion.div
+        className="relative"
+        initial={reduce ? false : { clipPath: "inset(4% 3% 0% 3% round 14px)" }}
+        animate={{ clipPath: "inset(0% 0% 0% 0% round 14px)" }}
+        transition={{ duration: 1.2, ease: EASE }}
+      >
+        <ul
+          aria-label="Fotos de la propiedad"
+          className="grid aspect-[4/3] grid-cols-1 gap-2 overflow-hidden rounded-4xl md:aspect-auto md:h-[min(36rem,calc(100dvh-14rem))] md:min-h-[26rem] md:grid-cols-4 md:grid-rows-2"
         >
-          <motion.span
-            className="absolute inset-x-0 -top-[7%] -bottom-[7%] block will-change-transform"
-            style={reduce ? { top: 0, bottom: 0 } : { y }}
-            initial={reduce ? false : { scale: 1.12 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 1.6, ease: EASE }}
-          >
-            <Image
-              src={cover}
-              alt={`Foto principal de ${title}`}
-              fill
-              priority
-              sizes="(min-width: 1280px) 1216px, 100vw"
-              className="object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-            />
-          </motion.span>
-        </motion.button>
-      ) : (
-        <div className="flex aspect-[16/9] w-full flex-col items-center justify-center gap-2 rounded-4xl bg-sunken text-muted-foreground">
-          <Images className="h-8 w-8 opacity-50" aria-hidden="true" />
-          Todavía no hay fotos de esta propiedad
-        </div>
-      )}
-
-      {children}
-
-      {rest.length > 0 && (
-        <div className="site-rise mt-12 [--rise-delay:600ms]">
-          {/* Bordes que se desvanecen: la tira sigue más allá de la pantalla. */}
-          <ul
-            aria-label="Fotos de la propiedad"
-            className="-mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2 [scrollbar-width:none] md:-mx-8 md:gap-4 md:px-8 [&::-webkit-scrollbar]:hidden"
-          >
-            <li className="snap-start">
+          {shown.map((src, i) => (
+            <li key={`${src}-${i}`} className={`relative min-h-0 ${spans[i]} ${i > 0 ? "hidden md:block" : ""}`}>
               <button
                 type="button"
-                onClick={() => open(0)}
-                className="flex h-40 w-40 shrink-0 cursor-pointer flex-col justify-between rounded-2xl bg-foreground p-5 text-left text-background transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:h-56 md:w-56"
+                onClick={() => open(i)}
+                aria-label={i === 0 ? `Ver las ${images.length} fotos de ${title}` : `Abrir foto ${i + 1} de ${images.length}`}
+                className="group relative block h-full w-full cursor-zoom-in overflow-hidden bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
               >
-                <Images className="h-5 w-5 opacity-70" aria-hidden="true" />
-                <span>
-                  <span className="block font-display text-5xl leading-none">{images.length}</span>
-                  <span className="mt-1 block text-sm text-background/70">Ver todas las fotos</span>
-                </span>
+                {i === 0 ? (
+                  <Image
+                    src={src}
+                    alt={`Foto principal de ${title}`}
+                    fill
+                    priority
+                    sizes="(min-width: 768px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                  />
+                ) : (
+                  <CardImage src={src} alt={`Foto ${i + 1} de ${title}`} sizes="25vw" />
+                )}
               </button>
             </li>
-            {rest.map((src, i) => (
-              <li key={`${src}-${i}`} className="snap-start">
-                <button
-                  type="button"
-                  onClick={() => open(i + 1)}
-                  aria-label={`Abrir foto ${i + 2} de ${images.length}`}
-                  className="group relative block h-40 w-[13.5rem] shrink-0 cursor-zoom-in overflow-hidden rounded-2xl bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:h-56 md:w-[18.5rem]"
-                >
-                  <CardImage src={src} alt={`Foto ${i + 2} de ${title}`} sizes="300px" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+          ))}
+        </ul>
+
+        {images.length > 1 && (
+          <button
+            type="button"
+            onClick={() => open(0)}
+            className="absolute right-3 bottom-3 inline-flex h-10 cursor-pointer items-center gap-2 rounded-full bg-background/90 px-4 text-sm font-semibold text-foreground shadow-[0_8px_24px_-12px_rgb(21_21_21/0.5)] backdrop-blur-sm transition-[background-color,transform] hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-[0.98] md:right-4 md:bottom-4"
+          >
+            <Images className="h-4 w-4" aria-hidden="true" />
+            Ver las {images.length} fotos
+          </button>
+        )}
+      </motion.div>
 
       <AnimatePresence>
         {openAt !== null && (

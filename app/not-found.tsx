@@ -3,19 +3,14 @@ import { BRAND } from "@/lib/brand";
 import { siteFontVars } from "@/app/fonts/site";
 import { SiteHeader } from "@/features/public/v2/SiteHeader";
 import { SiteFooter } from "@/features/public/v2/SiteFooter";
+import { NotFoundContent } from "@/features/public/v2/NotFoundContent";
 
-// Títulos de pestaña con el nombre de la inmobiliaria ("Ficha | Marca").
-export const metadata: Metadata = {
-  title: { default: BRAND.name, template: `%s | ${BRAND.name}` },
-};
+export const metadata: Metadata = { title: `Página no encontrada | ${BRAND.name}` };
 
-// Layout del sitio público v3: tokens y fuentes de `site-public`, navbar
-// fija de 64px (de ahí el pt-16) y footer.
-export default function PublicLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+// 404 de las direcciones que no existen en ninguna ruta. Vive fuera del
+// layout de (public), así que arma el mismo envoltorio: tokens, fuentes,
+// header y footer del sitio.
+export default function NotFound() {
   return (
     <div className="site-public contents">
       <style href="site-fonts" precedence="default">
@@ -23,7 +18,7 @@ export default function PublicLayout({
       </style>
       <SiteHeader />
       <main id="contenido" className="flex min-h-[100dvh] flex-col pt-16">
-        {children}
+        <NotFoundContent />
       </main>
       <SiteFooter />
     </div>

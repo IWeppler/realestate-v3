@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { ArrowRight, Check, Loader2, MessageCircle } from "lucide-react";
+import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { createContactLeadAction } from "@/features/actions/createContactLeadAction";
 import { whatsappLink } from "@/lib/brand";
 import { CONTACT_CTA_LABEL } from "@/features/public/v2/content";
@@ -38,10 +39,10 @@ export function ContactForm() {
   if (state.success) {
     return (
       <div role="status" className="flex flex-col items-start gap-5 py-6">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-main text-primary-foreground">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-pop text-foreground">
           <Check className="h-6 w-6" aria-hidden="true" />
         </span>
-        <h2 className="font-display text-4xl leading-[1] font-normal tracking-[-0.03em] text-foreground">
+        <h2 className="font-display text-4xl leading-[1] font-medium tracking-[-0.035em] text-foreground">
           Recibimos tu mensaje
         </h2>
         <p className="max-w-[40ch] text-lg leading-relaxed text-fg-secondary">
@@ -51,9 +52,9 @@ export function ContactForm() {
           href={whatsappLink("Hola, acabo de dejar un mensaje en la web.")}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-[52px] items-center gap-2 rounded-full border border-border-strong px-7 text-base font-semibold whitespace-nowrap text-foreground transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="inline-flex h-[52px] items-center gap-2 rounded-full bg-main px-7 text-base font-semibold whitespace-nowrap text-primary-foreground transition-colors hover:bg-main-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <MessageCircle className="h-5 w-5" aria-hidden="true" />
+          <FaWhatsapp className="h-5 w-5" aria-hidden="true" />
           {CONTACT_CTA_LABEL}
         </a>
       </div>
@@ -89,13 +90,13 @@ export function ContactForm() {
     >
       <fieldset>
         <legend className="mb-3 text-sm font-medium text-foreground">
-          ¿Sobre qué es tu consulta? <span className="font-normal text-muted-foreground">(opcional)</span>
+          ¿Sobre qué es tu consulta? <span className="font-normal text-fg-secondary">(opcional)</span>
         </legend>
         <div className="flex flex-wrap gap-2">
           {TOPICS.map((t) => (
             <label key={t}>
               <input type="radio" name="topic" value={t} className="peer sr-only" />
-              <span className="inline-flex h-10 cursor-pointer items-center rounded-full border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors peer-checked:border-foreground peer-checked:bg-foreground peer-checked:text-background peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 hover:border-border-strong">
+              <span className="inline-flex h-9 cursor-pointer items-center rounded-full border border-border-strong px-3.5 text-sm font-medium text-fg-secondary transition-colors peer-checked:border-main peer-checked:bg-main peer-checked:text-primary-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 hover:border-foreground hover:text-foreground">
                 {t}
               </span>
             </label>
@@ -133,7 +134,7 @@ export function ContactForm() {
         </p>
       )}
 
-      <button type="submit" disabled={pending} className={submitClass}>
+      <button type="submit" disabled={pending} className={cn(submitClass, "w-full text-base sm:w-full")}>
         {pending ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />

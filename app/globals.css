@@ -14,11 +14,11 @@
 
 @theme inline {
   /* --- FUENTES ---
-     --font-sans (Inter) es la del producto. Instrument Serif (titulares)
-     y Geist (texto) son del sitio público: se cargan en app/(public)/layout.tsx y llegan como
+     --font-sans (Inter) es la del producto. Clash Grotesk (titulares)
+     y General Sans (texto) son del sitio público: se cargan en app/(public)/layout.tsx y llegan como
      --site-font-display / --site-font-body. */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--site-font-display, Georgia), serif;
+  --font-display: var(--site-font-display, ui-sans-serif), sans-serif;
   --font-general: var(--site-font-body, ui-sans-serif), sans-serif;
 
   /* --- COLOR DE MARCA ---
@@ -28,6 +28,9 @@
   --color-main-red: #c4171d;
   --color-main-soft: var(--brand-main-soft);
   --color-main-hover: var(--brand-main-hover);
+  /* Acento saturado del sitio público (solo lo define `.site-public`). */
+  --color-pop: var(--brand-pop, var(--brand-main));
+  --color-pop-hover: var(--brand-pop-hover, var(--brand-main-hover));
 
   /* --- SUPERFICIES Y TEXTO (semánticos) --- */
   --color-background: var(--background);
@@ -103,59 +106,63 @@ body {
    Independientes del panel. Se aplican al wrapper `.site-public` y a
    <body> mientras el sitio público está montado, así los portales de
    Radix (selects, popovers, menús, toasts) heredan lo mismo.
-   Paleta tomada de trumpaccounts.gov (referencia elegida por el
-   usuario): fondos arena (#f2eee6) y crema (#f9f6f0) que alternan por
-   sección, tinta pizarra (#212c33), acción en azul marino (#2d3a50) y
-   arena tostada (#e5cfa0) solo para bloques de acento.
+   Paleta v3, monocromo + un acento: off-white neutro (#f4f4f2) con
+   secciones alternas un paso más hundidas (#ebebe8), tinta off-black
+   (#151515) que también es el color de acción, y naranja señal
+   (#ff5a1f) como único acento: botón de búsqueda, bloque de tasación,
+   detalles de marca. Sobre el naranja el texto va siempre en off-black
+   (5.9:1); el blanco no pasa AA.
    Siempre claro: no reacciona al `.dark` del panel.
-   Radios: 10 controles, 16-24 cards, 32 bloques, 40 bloques grandes;
-   botones y toggles en píldora.
+   Radios: superficies chicas (4-14px, look arquitectónico); todo lo
+   interactivo (botones, toggles, chips) en píldora.
    ============================================================ */
 .site-public,
 body:has(.site-public) {
   color-scheme: light;
-  /* Instrument Serif solo tiene peso 400: nunca inventar una negrita. */
+  /* Clash Grotesk arranca en 500: nunca inventar pesos que no existen. */
   font-synthesis-weight: none;
 
-  --brand-main: #2d3a50;
-  --brand-main-hover: #212c33;
-  --brand-main-soft: #e5cfa0;
+  --brand-main: #151515;
+  --brand-main-hover: #2c2c2a;
+  --brand-main-soft: #ffe2d4;
+  --brand-pop: #ff5a1f;
+  --brand-pop-hover: #ff7440;
 
-  --background: #f2eee6;
-  --surface-alt: #f9f6f0;
-  --foreground: #212c33;
-  --sunken: #e9e3d7;
-  --fg-secondary: #3a3b45;
-  --fg-disabled: #a19c91;
-  --border-subtle: #e6e0d4;
-  --border-strong: #c9c1b2;
+  --background: #f4f4f2;
+  --surface-alt: #ebebe8;
+  --foreground: #151515;
+  --sunken: #e4e4e0;
+  --fg-secondary: #3d3d3b;
+  --fg-disabled: #9e9e99;
+  --border-subtle: #e2e2de;
+  --border-strong: #b8b8b3;
 
-  --card: #fdfcf9;
-  --card-foreground: #212c33;
-  --popover: #fdfcf9;
-  --popover-foreground: #212c33;
+  --card: #fbfbfa;
+  --card-foreground: #151515;
+  --popover: #fbfbfa;
+  --popover-foreground: #151515;
 
-  --primary: #2d3a50;
-  --primary-foreground: #f9f7f1;
-  --secondary: #e9e3d7;
-  --secondary-foreground: #212c33;
-  --muted: #e9e3d7;
-  --muted-foreground: #465660;
-  --accent: #e9e3d7;
-  --accent-foreground: #212c33;
+  --primary: #151515;
+  --primary-foreground: #f4f4f2;
+  --secondary: #e4e4e0;
+  --secondary-foreground: #151515;
+  --muted: #e4e4e0;
+  --muted-foreground: #5f5f5c;
+  --accent: #e4e4e0;
+  --accent-foreground: #151515;
   --destructive: #b42318;
-  --border: #ddd6c9;
-  --input: #cfc7b8;
-  --ring: #2d3a50;
+  --border: #dcdcd8;
+  --input: #c8c8c3;
+  --ring: #151515;
 
-  --radius: 10px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  --radius-3xl: 32px;
-  --radius-4xl: 40px;
+  --radius: 6px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --radius-2xl: 10px;
+  --radius-3xl: 12px;
+  --radius-4xl: 14px;
 
   /* Directo a --site-font-body: --font-general se resuelve en :root,
      donde esa variable no existe. */
@@ -208,27 +215,7 @@ body:has(.site-public) {
   }
 }
 
-/* Marquee del hero: la pista lleva la lista dos veces y se corre la mitad
-   de su ancho, así el loop no tiene salto. La duración la fija el
-   componente según la cantidad de ítems (--marquee-duration). */
-@keyframes site-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
-  .site-marquee {
-    animation: site-marquee var(--marquee-duration, 60s) linear infinite;
-  }
-  /* Pausa para mirar o hacer clic (mouse o teclado). */
-  .site-marquee-wrap:hover .site-marquee,
-  .site-marquee-wrap:focus-within .site-marquee {
-    animation-play-state: paused;
-  }
   .site-fade {
     animation: site-fade 0.25s ease-out both;
   }

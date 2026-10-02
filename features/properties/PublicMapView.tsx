@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { ImageOff, MapPin, MapPinOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CardImage } from "@/features/properties/CardImage";
-import { PropertyMeta, cardImages } from "@/features/properties/PropertyCard";
+import { cardImages, operationAndPrice, propertySpecs } from "@/features/properties/PropertyCard";
 import type { PropertyCardData } from "@/app/types/entities";
 import {
   isLocated,
@@ -58,7 +59,7 @@ export function PublicMapView({ properties }: { properties: MapProperty[] }) {
   };
 
   return (
-    <div className="absolute inset-0 grid grid-rows-[minmax(0,1fr)_minmax(0,1.1fr)] gap-4 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:grid-rows-1 lg:gap-6 xl:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]">
+    <div className="absolute inset-0 grid grid-rows-[minmax(0,1fr)_minmax(0,1.1fr)] gap-4 lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:grid-rows-1 lg:gap-6 xl:grid-cols-[minmax(0,440px)_minmax(0,1fr)]">
       <aside className="order-2 flex min-h-0 flex-col lg:order-1">
         {unlocated.length > 0 && (
           <p className="pb-3 text-xs text-muted-foreground">
@@ -66,13 +67,18 @@ export function PublicMapView({ properties }: { properties: MapProperty[] }) {
           </p>
         )}
 
-        {/* Mismas tarjetas que el listado. El resaltado (hover o pin) es un
-            anillo en la foto, sincronizado con el pin del mapa. */}
-        <ul className="grid min-h-0 flex-1 auto-rows-min grid-cols-1 gap-x-5 gap-y-8 overflow-y-auto overscroll-contain pr-1 pb-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        {/* Tarjetas horizontales: foto chica a la izquierda y datos al
+            costado, en una sola columna, así el mapa tiene más ancho. El
+            resaltado (hover o pin) es un anillo en la foto, sincronizado con
+            el pin del mapa. */}
+        <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pr-1 pb-4">
           {[...located, ...unlocated].map((p) => {
             const onMap = isLocated(p);
             const highlighted = highlightedId === p.id;
             const cover = cardImages(p.property_images)[0];
+            const property = p as unknown as PropertyCardData;
+            const { operation, price } = operationAndPrice(property);
+            const specs = propertySpecs(property);
             return (
               <li
                 key={p.id}
@@ -82,42 +88,66 @@ export function PublicMapView({ properties }: { properties: MapProperty[] }) {
                 }}
                 onMouseEnter={() => onMap && setActiveId(p.id)}
                 onMouseLeave={() => setActiveId(null)}
-                className="group relative flex flex-col"
+                className={cn(
+                  "group relative flex gap-4 rounded-2xl p-2 transition-colors duration-200 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring",
+                  highlighted ? "bg-card" : "hover:bg-card",
+                )}
               >
                 <div
                   className={cn(
-                    "relative aspect-4/3 w-full overflow-hidden rounded-[8px] bg-sunken ring-offset-2 ring-offset-background transition-shadow duration-200 group-has-[a:focus-visible]:ring-2 group-has-[a:focus-visible]:ring-ring",
-                    highlighted && "ring-2 ring-main",
+                    "relative aspect-4/3 w-36 shrink-0 self-start overflow-hidden rounded-[8px] bg-sunken ring-offset-2 ring-offset-card transition-shadow duration-200 sm:w-44",
+                    highlighted && "ring-2 ring-pop",
                   )}
                 >
                   {cover ? (
-                    <CardImage src={cover} alt={p.title} sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 420px, 50vw" />
+                    <CardImage src={cover} alt={p.title} sizes="176px" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-fg-disabled">
-                      <ImageOff className="h-6 w-6" aria-hidden="true" />
+                      <ImageOff className="h-5 w-5" aria-hidden="true" />
                     </div>
                   )}
                 </div>
 
-                <PropertyMeta property={p as unknown as PropertyCardData} compact />
+                <div className="flex min-w-0 flex-1 flex-col py-1 pr-1">
+                  <p className="text-xs font-medium text-fg-secondary">{operation}</p>
+                  <h3 className="mt-0.5 line-clamp-2 text-[15px] leading-snug font-semibold text-foreground" title={p.title}>
+                    <Link href={`/propiedades/${p.id}`} className="after:absolute after:inset-0 focus-visible:outline-none">
+                      {p.title}
+                    </Link>
+                  </h3>
+                  <p className="mt-1 font-display text-lg leading-tight font-semibold tracking-[-0.01em] text-foreground tabular-nums">
+                    {price}
+                  </p>
 
-                {/* Por encima del link estirado de la tarjeta. */}
-                <div className="relative z-10 mt-2">
-                  {onMap ? (
-                    <button
-                      type="button"
-                      onClick={() => selectFromList(p)}
-                      className="inline-flex cursor-pointer items-center gap-1 rounded-full text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-                      Ver en el mapa
-                    </button>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPinOff className="h-3.5 w-3.5" aria-hidden="true" />
-                      Sin ubicación en el mapa
-                    </span>
+                  {specs.length > 0 && (
+                    <ul className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-secondary">
+                      {specs.map(({ key, icon: Icon, text }) => (
+                        <li key={key} className="inline-flex items-center gap-1">
+                          <Icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
+                          {text}
+                        </li>
+                      ))}
+                    </ul>
                   )}
+
+                  {/* Por encima del link estirado de la tarjeta. */}
+                  <div className="relative z-10 mt-auto pt-2">
+                    {onMap ? (
+                      <button
+                        type="button"
+                        onClick={() => selectFromList(p)}
+                        className="inline-flex cursor-pointer items-center gap-1 rounded-full text-xs font-medium text-fg-secondary underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                        Ver en el mapa
+                      </button>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs text-fg-secondary">
+                        <MapPinOff className="h-3.5 w-3.5" aria-hidden="true" />
+                        Sin ubicación en el mapa
+                      </span>
+                    )}
+                  </div>
                 </div>
               </li>
             );

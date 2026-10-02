@@ -3,7 +3,8 @@
 import { useActionState, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Check, Loader2, MessageCircle, Phone } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, Loader2, Phone } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { createLeadFromPublic } from "@/features/actions/createLeadActions";
 import { propertyUrl, whatsappLink } from "@/lib/brand";
 import { cn } from "@/lib/utils";
@@ -21,10 +22,14 @@ type ContactProps = {
   agent: Agent;
 };
 
+// Acción principal en naranja (agendar visita, la conversión de la ficha);
+// sin agendar disponible, WhatsApp pasa a ser la principal en negro.
+const popClass =
+  "inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-pop px-6 text-base font-semibold whitespace-nowrap text-foreground transition-[background-color,transform] hover:bg-pop-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card active:scale-[0.99]";
 const primaryClass =
   "inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-main px-6 text-base font-semibold whitespace-nowrap text-primary-foreground transition-[background-color,transform] hover:bg-main-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.99]";
 const secondaryClass =
-  "inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full border border-border-strong px-6 text-base font-semibold whitespace-nowrap text-foreground transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+  "inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full border border-border-strong px-6 text-base font-semibold whitespace-nowrap text-foreground transition-colors hover:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 // Mismo texto en servidor y cliente (sin window): la URL sale de la marca.
 function waMessage(title: string, id: string) {
@@ -54,20 +59,20 @@ export function PropertyContactCard({
   agent,
 }: ContactProps) {
   return (
-    <div className="rounded-4xl bg-card p-6 shadow-[0_24px_60px_-36px_rgb(33_44_51/0.35)] md:p-8">
-      <p className="text-sm text-muted-foreground">{priceLabel}</p>
-      <p className="mt-1 font-display text-4xl leading-none font-normal tracking-[-0.02em] text-foreground md:text-5xl">
+    <div className="rounded-3xl bg-card p-6 shadow-[0_30px_60px_-36px_rgb(21_21_21/0.4)] md:p-7">
+      <p className="text-sm text-fg-secondary">{priceLabel}</p>
+      <p className="mt-1 font-display text-4xl leading-none font-medium tracking-[-0.035em] text-foreground md:text-5xl">
         {priceDisplay}
       </p>
       {expensasDisplay && (
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-fg-secondary">
           + {expensasDisplay} de expensas
         </p>
       )}
 
       <div className="mt-8 flex flex-col gap-3">
         {available ? (
-          <Link href={`/agendar/${propertyId}`} className={primaryClass}>
+          <Link href={`/agendar/${propertyId}`} className={popClass}>
             <CalendarDays className="h-5 w-5" aria-hidden="true" />
             Agendar visita
           </Link>
@@ -82,7 +87,7 @@ export function PropertyContactCard({
           rel="noopener noreferrer"
           className={available ? secondaryClass : primaryClass}
         >
-          <MessageCircle className="h-5 w-5" aria-hidden="true" />
+          <FaWhatsapp className="h-5 w-5" aria-hidden="true" />
           Consultar por WhatsApp
         </a>
       </div>
@@ -100,7 +105,7 @@ export function PropertyContactCard({
             />
           ) : (
             <span
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-main-soft text-sm font-semibold text-foreground"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-pop text-sm font-semibold text-foreground"
               aria-hidden="true"
             >
               {initials(agent.full_name)}
@@ -108,13 +113,13 @@ export function PropertyContactCard({
           )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-base font-semibold text-foreground">{agent.full_name}</p>
-            <p className="text-sm text-muted-foreground">Asesor a cargo</p>
+            <p className="text-sm text-fg-secondary">Asesor a cargo</p>
           </div>
           {agent.phone && (
             <a
               href={`tel:${agent.phone.replace(/[^\d+]/g, "")}`}
               aria-label={`Llamar a ${agent.full_name}`}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border-strong text-foreground transition-colors hover:border-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Phone className="h-4 w-4" aria-hidden="true" />
             </a>
@@ -149,7 +154,7 @@ export function PropertyInquiryForm({ propertyId, title }: { propertyId: string;
   if (state.success) {
     return (
       <div role="status" className="flex items-start gap-4">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-main text-primary-foreground">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pop text-foreground">
           <Check className="h-5 w-5" aria-hidden="true" />
         </span>
         <div>
@@ -242,8 +247,8 @@ export function MobileContactBar({
     <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md lg:hidden">
       <div className="mx-auto flex max-w-7xl items-center gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-xs text-muted-foreground">{priceLabel}</p>
-          <p className="truncate text-lg font-semibold text-foreground">{priceDisplay}</p>
+          <p className="text-xs text-fg-secondary">{priceLabel}</p>
+          <p className="truncate font-display text-xl font-semibold tracking-[-0.02em] text-foreground">{priceDisplay}</p>
         </div>
         <a
           href={whatsappLink(waMessage(title, propertyId))}
@@ -252,12 +257,12 @@ export function MobileContactBar({
           aria-label="Consultar por WhatsApp"
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border-strong text-foreground"
         >
-          <MessageCircle className="h-5 w-5" aria-hidden="true" />
+          <FaWhatsapp className="h-5 w-5" aria-hidden="true" />
         </a>
         {available && (
           <Link
             href={`/agendar/${propertyId}`}
-            className="inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-main px-5 text-sm font-semibold text-primary-foreground"
+            className="inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-pop px-5 text-sm font-semibold text-foreground active:scale-[0.98]"
           >
             Agendar visita
           </Link>
