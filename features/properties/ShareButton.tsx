@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
+import { useTranslations } from "next-intl";
 import { Check, Link as LinkIcon, Share2 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ interface ShareButtonProps {
 // La tarjeta rica (foto, precio) la aporta la OG image dinámica de
 // /propiedades/[slug]/opengraph-image.tsx, no este componente.
 export function ShareButton({ title, price, location, url }: ShareButtonProps) {
+  const t = useTranslations("property.share");
   const [copied, setCopied] = useState(false);
   // Se resuelve con useSyncExternalStore para no desincronizar la
   // hidratación: en servidor (snapshot false) no existe navigator.
@@ -43,7 +45,7 @@ export function ShareButton({ title, price, location, url }: ShareButtonProps) {
     `*${title}*`,
     [price, location].filter(Boolean).join(" · "),
     "",
-    `Mirá todos los detalles en ${BRAND.name}:`,
+    t("message", { brand: BRAND.name }),
   ]
     .filter((l) => l !== undefined)
     .join("\n");
@@ -52,10 +54,10 @@ export function ShareButton({ title, price, location, url }: ShareButtonProps) {
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      toast.success("¡Enlace copiado al portapapeles!");
+      toast.success(t("copiedToast"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("No se pudo copiar el enlace.");
+      toast.error(t("copyError"));
     }
   };
 
@@ -78,7 +80,7 @@ export function ShareButton({ title, price, location, url }: ShareButtonProps) {
     return (
       <Button variant="outline" className="h-10 cursor-pointer gap-2 rounded-full border-border-strong bg-card px-4 text-sm font-medium text-foreground shadow-none hover:border-foreground hover:bg-card" onClick={handleNativeShare}>
         <Share2 className="h-4 w-4" aria-hidden="true" />
-        Compartir
+        {t("share")}
       </Button>
     );
   }
@@ -92,17 +94,17 @@ export function ShareButton({ title, price, location, url }: ShareButtonProps) {
           ) : (
             <Share2 className="h-4 w-4" aria-hidden="true" />
           )}
-          {copied ? "¡Copiado!" : "Compartir"}
+          {copied ? t("copied") : t("share")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="rounded-xl p-1">
         <DropdownMenuItem onClick={handleWhatsApp} className="cursor-pointer rounded-lg py-2">
           <FaWhatsapp className="mr-2 h-4 w-4" aria-hidden="true" />
-          WhatsApp
+          {t("whatsapp")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleCopyLink} className="cursor-pointer rounded-lg py-2">
           <LinkIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-          Copiar enlace
+          {t("copyLink")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

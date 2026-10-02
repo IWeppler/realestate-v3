@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { ChevronDown } from "lucide-react";
 
 type DescriptionProps = {
@@ -10,10 +11,11 @@ type DescriptionProps = {
 // Descripción de la ficha: se muestra recortada con un desvanecido y un
 // "Seguir leyendo" que la despliega. Si es corta, no hay botón.
 export function DescriptionWithReadMore({ text }: DescriptionProps) {
+  const t = useTranslations("property.description");
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (!text) {
-    return <p className="text-lg text-fg-secondary">No hay descripción disponible.</p>;
+    return <p className="text-lg text-fg-secondary">{t("empty")}</p>;
   }
 
   const long = text.length > 600;
@@ -44,7 +46,7 @@ export function DescriptionWithReadMore({ text }: DescriptionProps) {
           aria-expanded={isExpanded}
           className="mt-4 inline-flex cursor-pointer items-center gap-1.5 rounded-full text-base font-semibold text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          {isExpanded ? "Ver menos" : "Seguir leyendo"}
+          {isExpanded ? t("readLess") : t("readMore")}
           <ChevronDown
             className={`h-4 w-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
             aria-hidden="true"

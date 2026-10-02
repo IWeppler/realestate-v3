@@ -1,0 +1,61 @@
+{
+  "metaTitle": "{brand} | Imóveis para venda e aluguel",
+  "hero": {
+    "title": "Encontre onde\nvocê vai morar.",
+    "subtitle": "Casas, apartamentos e terrenos para venda e aluguel, com assessoria do começo ao fim."
+  },
+  "search": {
+    "aria": "Buscar imóveis",
+    "operation": "Operação",
+    "buy": "Comprar",
+    "rent": "Alugar",
+    "type": "Tipo de imóvel",
+    "all": "Todos",
+    "zone": "Região",
+    "bedrooms": "Dormitórios",
+    "submit": "Buscar imóveis"
+  },
+  "featured": {
+    "title": "Destaques",
+    "subtitle": "Os imóveis mais consultados no momento.",
+    "viewAll": "Ver todos"
+  },
+  "types": {
+    "title": "Explore por tipo",
+    "available": "{count, plural, one {# disponível} other {# disponíveis}}"
+  },
+  "trust": {
+    "title": "Quem já fechou negócio conosco",
+    "stats": {
+      "years": {
+        "value": "18",
+        "label": "anos no mercado"
+      },
+      "deals": {
+        "value": "1.240",
+        "label": "negócios fechados"
+      },
+      "saleTime": {
+        "value": "37 dias",
+        "label": "prazo médio de venda desde a avaliação"
+      }
+    },
+    "testimonials": {
+      "sale": {
+        "quote": "Vendemos o apartamento em cinco semanas. Explicaram cada passo e nunca precisamos correr atrás de ninguém por uma resposta.",
+        "name": "Mariana Sosa",
+        "role": "Vendeu seu apartamento"
+      },
+      "purchase": {
+        "quote": "Procurávamos uma casa com quintal para as crianças. Mostraram três opções que realmente combinavam, não vinte que não tinham nada a ver.",
+        "name": "Julián Ferreyra",
+        "role": "Comprou sua primeira casa"
+      },
+      "owner": {
+        "quote": "Alugo duas unidades com eles há quatro anos. Recebo em dia, tenho os contratos em ordem e zero surpresas.",
+        "name": "Carla Benítez",
+        "role": "Proprietária"
+      }
+    }
+  }
+}

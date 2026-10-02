@@ -1,0 +1,55 @@
+{
+  "tile": {
+    "title": "¿No encontrás lo que buscás?",
+    "body": "Muchas propiedades se venden antes de publicarse. Dejanos esta búsqueda y te avisamos apenas entre algo así.",
+    "cta": "Avisame cuando entre"
+  },
+  "dialog": {
+    "title": "Te avisamos cuando entre",
+    "description": "Muchas propiedades se venden antes de publicarse. Dejanos tu contacto y un asesor te escribe primero."
+  },
+  "editor": {
+    "title": "Tu búsqueda",
+    "done": "Listo",
+    "edit": "Editar filtros",
+    "add": "Agregar filtros",
+    "remove": "Quitar {label}",
+    "empty": "Cualquier propiedad nueva. Sumá filtros para recibir solo lo que te interesa.",
+    "operationLabel": "Operación",
+    "operations": {
+      "any": "Cualquiera",
+      "buy": "Comprar",
+      "rent": "Alquilar"
+    },
+    "zone": "Zona o dirección",
+    "propertyType": "Tipo de propiedad",
+    "allTypes": "Todos",
+    "bedrooms": "Dormitorios"
+  },
+  "chips": {
+    "forSale": "Para comprar",
+    "forRent": "Para alquilar",
+    "bedrooms": "{count}+ dormitorios",
+    "bathrooms": "{count}+ baños"
+  },
+  "form": {
+    "name": "Nombre y apellido",
+    "phone": "Teléfono",
+    "email": "Email",
+    "optional": "(opcional)",
+    "creating": "Creando alerta…",
+    "create": "Crear alerta",
+    "successTitle": "Alerta creada",
+    "successBody": "Un asesor te va a escribir apenas entre una propiedad que encaje con tu búsqueda.",
+    "errors": {
+      "name": "Escribí tu nombre.",
+      "phone": "Escribí un teléfono con código de área.",
+      "email": "Revisá el email."
+    }
+  },
+  "actions": {
+    "invalid": "Revisá tu nombre y teléfono.",
+    "failed": "No pudimos guardar tu alerta. Probá de nuevo en unos minutos o escribinos por WhatsApp.",
+    "success": "Listo, te avisamos apenas entre algo así."
+  }
+}

@@ -1,7 +1,7 @@
 import { Mail } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { FaWhatsapp } from "react-icons/fa";
 import { BRAND, whatsappLink } from "@/lib/brand";
-import { CONTACT_CTA_LABEL } from "@/features/public/v2/content";
 import { Reveal } from "@/features/public/v2/Reveal";
 import { SplitHeading } from "@/features/public/v2/motion";
 
@@ -9,6 +9,8 @@ import { SplitHeading } from "@/features/public/v2/motion";
 // CTA de contacto (WhatsApp); el email va como dato, no como segundo
 // botón con la misma intención.
 export function ContactClose() {
+  const t = useTranslations("contact.close");
+  const tc = useTranslations("common");
   return (
     <section aria-labelledby="v2-contact-title" id="contacto" className="w-full bg-background">
       <div className="mx-auto w-full max-w-7xl px-4 py-20 md:px-8 lg:py-32">
@@ -16,25 +18,25 @@ export function ContactClose() {
           <div className="lg:col-span-8">
             <SplitHeading
               id="v2-contact-title"
-              text="¿No encontrás lo que buscás?"
+              text={t("title")}
               className="max-w-[16ch] font-display text-5xl leading-[0.95] font-medium tracking-[-0.04em] text-foreground md:text-7xl lg:text-[5.5rem]"
             />
             <Reveal delay={0.3}>
               <p className="mt-6 max-w-[44ch] text-xl leading-[1.5] text-fg-secondary">
-                Muchas propiedades se venden antes de publicarse. Contanos qué necesitás y te avisamos.
+                {t("body")}
               </p>
             </Reveal>
           </div>
 
           <Reveal delay={0.4} className="flex flex-col items-start gap-4 lg:col-span-4 lg:items-end">
             <a
-              href={whatsappLink("Hola, estoy buscando una propiedad y quería hacer una consulta.")}
+              href={whatsappLink(t("whatsappMessage"))}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-[52px] items-center gap-2 rounded-full bg-main px-8 text-lg font-semibold whitespace-nowrap text-primary-foreground transition-[background-color,transform] hover:bg-main-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.98]"
             >
               <FaWhatsapp className="h-5 w-5" aria-hidden="true" />
-              {CONTACT_CTA_LABEL}
+              {tc("contactCta")}
             </a>
             <a
               href={`mailto:${BRAND.email}`}

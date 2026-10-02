@@ -1,11 +1,11 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { createAppraisalLeadAction } from "@/features/actions/createAppraisalLeadAction";
 import { whatsappLink } from "@/lib/brand";
-import { CONTACT_CTA_LABEL } from "@/features/public/v2/content";
 import { cn } from "@/lib/utils";
 import { Field, inputClass, invalidProps } from "@/features/public/v2/formParts";
 import { SegmentedControl } from "@/features/public/v2/ChoiceGroup";
@@ -18,27 +18,29 @@ type Errors = Partial<Record<Key, string>>;
 const initialState: FormState = { success: false, message: "" };
 
 const STEPS = [
-  { label: "Tu propiedad", keys: ["operationType", "propertyType", "address"] as Key[] },
-  { label: "Tus datos", keys: ["name", "phone", "email"] as Key[] },
-];
+  { label: "stepProperty", keys: ["operationType", "propertyType", "address"] as Key[] },
+  { label: "stepContact", keys: ["name", "phone", "email"] as Key[] },
+] as const;
 
 const OPERATIONS = [
-  { value: "VENTA", label: "Vender" },
-  { value: "ALQUILER", label: "Alquilar" },
-];
+  { value: "VENTA", key: "sell" },
+  { value: "ALQUILER", key: "rent" },
+] as const;
+
+type T = ReturnType<typeof useTranslations<"appraisal.form">>;
 
 // Mismas reglas que el schema de la Server Action (createAppraisalLeadAction),
 // para avisar en el campo antes de enviar. El servidor vuelve a validar.
-function validate(data: FormData): Errors {
+function validate(data: FormData, t: T): Errors {
   const v = (k: string) => String(data.get(k) ?? "").trim();
   const errors: Errors = {};
-  if (!v("operationType")) errors.operationType = "Elegí si querés vender o alquilar.";
-  if (!v("propertyType")) errors.propertyType = "Elegí el tipo de propiedad.";
-  if (v("address").length < 5) errors.address = "Escribí la dirección (calle, número y ciudad).";
-  if (v("name").length < 3) errors.name = "Escribí tu nombre.";
-  if (v("phone").replace(/\D/g, "").length < 8) errors.phone = "Escribí un teléfono con código de área.";
+  if (!v("operationType")) errors.operationType = t("errors.operationType");
+  if (!v("propertyType")) errors.propertyType = t("errors.propertyType");
+  if (v("address").length < 5) errors.address = t("errors.address");
+  if (v("name").length < 3) errors.name = t("errors.name");
+  if (v("phone").replace(/\D/g, "").length < 8) errors.phone = t("errors.phone");
   const email = v("email");
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Revisá el email.";
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = t("errors.email");
   return errors;
 }
 
@@ -50,6 +52,8 @@ const pick = (errors: Errors, keys: Key[]) =>
 // paso oculto sigue dentro y viaja en el envío, con los mismos nombres de
 // campo de siempre. Al enviar bien, se reemplaza por la confirmación.
 export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
+  const t = useTranslations("appraisal.form");
+  const tc = useTranslations("common");
   const [state, formAction, pending] = useActionState(createAppraisalLeadAction, initialState);
   const [errors, setErrors] = useState<Errors>({});
   const [step, setStep] = useState(0);
@@ -64,19 +68,19 @@ export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
           <Check className="h-6 w-6" aria-hidden="true" />
         </span>
         <h2 className="font-display text-4xl leading-[1] font-medium tracking-[-0.035em] text-foreground">
-          Recibimos tu solicitud
+          {t("successTitle")}
         </h2>
         <p className="max-w-[40ch] text-lg leading-relaxed text-fg-secondary">
-          Un agente te va a llamar para coordinar la visita. Si preferís, escribinos directo.
+          {t("successBody")}
         </p>
         <a
-          href={whatsappLink("Hola, acabo de pedir una tasación desde la web.")}
+          href={whatsappLink(t("successWhatsappMessage"))}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex h-[52px] items-center gap-2 rounded-full bg-main px-7 text-base font-semibold whitespace-nowrap text-primary-foreground transition-colors hover:bg-main-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <FaWhatsapp className="h-5 w-5" aria-hidden="true" />
-          {CONTACT_CTA_LABEL}
+          {tc("contactCta")}
         </a>
       </div>
     );
@@ -95,7 +99,7 @@ export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
 
   const next = () => {
     if (!formRef.current) return;
-    const found = pick(validate(new FormData(formRef.current)), STEPS[0].keys);
+    const found = pick(validate(new FormData(formRef.current), t), STEPS[0].keys);
     setErrors(found);
     if (Object.keys(found).length > 0) {
       focusField(Object.keys(found)[0]);
@@ -119,7 +123,7 @@ export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
       noValidate
       action={formAction}
       onSubmit={(e) => {
-        const found = validate(new FormData(e.currentTarget));
+        const found = validate(new FormData(e.currentTarget), t);
         setErrors(found);
         if (Object.keys(found).length > 0) {
           e.preventDefault();
@@ -134,7 +138,7 @@ export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
       className="flex flex-col gap-6"
     >
       {/* Progreso: los dos pasos con su nombre; el primero se puede volver a abrir. */}
-      <ol className="grid grid-cols-2 gap-2" aria-label="Pasos">
+      <ol className="grid grid-cols-2 gap-2" aria-label={t("stepsLabel")}>
         {STEPS.map((s, i) => {
           const active = step === i;
           const done = step > i;
@@ -149,7 +153,7 @@ export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
                 <span className={cn("block h-1 w-full rounded-full transition-colors duration-500", active || done ? "bg-foreground" : "bg-border")} />
                 <span className={cn("flex items-center gap-1.5 text-sm font-medium", active || done ? "text-foreground" : "text-fg-secondary")}>
                   {done && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
-                  {s.label}
+                  {t(s.label)}
                 </span>
               </button>
             </li>
@@ -159,13 +163,16 @@ export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
 
       <div hidden={step !== 0} className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-foreground">¿Qué querés hacer?</span>
-          <SegmentedControl label="Operación" options={OPERATIONS} value={operation} onChange={setOperation} />
+          <span className="text-sm font-medium text-foreground">{t("operationQuestion")}</span>
+          <SegmentedControl
+            label={t("operationLabel")}
+            options={OPERATIONS.map((o) => ({ value: o.value, label: t(`operations.${o.key}`) }))}
+            value={operation} onChange={setOperation} />
           <input type="hidden" name="operationType" value={operation} />
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <Field id="propertyType" label="Tipo de propiedad" error={errors.propertyType}>
+          <Field id="propertyType" label={t("propertyType")} error={errors.propertyType}>
             {/* Select de shadcn (Radix): el valor viaja en el input oculto. */}
             <Select
               value={propertyType}
@@ -179,7 +186,7 @@ export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
                 className="h-12! w-full cursor-pointer rounded-xl border-input bg-background px-4 text-base hover:border-border-strong focus-visible:border-foreground focus-visible:ring-3 focus-visible:ring-ring/15 data-[state=open]:border-foreground"
                 {...described("propertyType")}
               >
-                <SelectValue placeholder="Elegí una opción" />
+                <SelectValue placeholder={t("propertyTypePlaceholder")} />
               </SelectTrigger>
               <SelectContent className="max-h-72 rounded-xl border-border bg-popover p-1 shadow-[0_16px_40px_-12px_rgb(21_21_21/0.35)]">
                 {propertyTypes.map((t) => (
@@ -192,12 +199,12 @@ export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
             <input type="hidden" name="propertyType" value={propertyType} />
           </Field>
 
-          <Field id="address" label="Dirección" error={errors.address}>
+          <Field id="address" label={t("address")} error={errors.address}>
             <input
               id="address"
               name="address"
               autoComplete="street-address"
-              placeholder="Calle, número y ciudad"
+              placeholder={t("addressPlaceholder")}
               className={inputClass}
               {...described("address")}
             />
@@ -209,32 +216,32 @@ export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
           onClick={next}
           className="group inline-flex h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-main text-base font-semibold text-primary-foreground transition-[background-color,transform] hover:bg-main-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.99]"
         >
-          Continuar
+          {t("continue")}
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
         </button>
       </div>
 
       <div hidden={step !== 1} className="flex flex-col gap-6">
-        <Field id="name" label="Nombre y apellido" error={errors.name}>
+        <Field id="name" label={t("name")} error={errors.name}>
           <input id="name" name="name" autoComplete="name" className={inputClass} {...described("name")} />
         </Field>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <Field id="phone" label="Teléfono" error={errors.phone}>
+          <Field id="phone" label={t("phone")} error={errors.phone}>
             <input id="phone" name="phone" type="tel" autoComplete="tel" inputMode="tel" className={inputClass} {...described("phone")} />
           </Field>
-          <Field id="email" label="Email" hint="(opcional)" error={errors.email}>
+          <Field id="email" label={t("email")} hint={t("optional")} error={errors.email}>
             <input id="email" name="email" type="email" autoComplete="email" className={inputClass} {...described("email")} />
           </Field>
         </div>
 
-        <Field id="consulta" label="Algo que quieras contarnos" hint="(opcional)">
+        <Field id="consulta" label={t("notes")} hint={t("optional")}>
           <textarea
             id="consulta"
             name="consulta"
             rows={3}
             className={cn(inputClass, "h-auto resize-none py-3 leading-relaxed")}
-            placeholder="Ej.: superficie, estado, si está ocupada…"
+            placeholder={t("notesPlaceholder")}
           />
         </Field>
 
@@ -248,7 +255,7 @@ export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
           <button
             type="button"
             onClick={() => goTo(0)}
-            aria-label="Volver a los datos de la propiedad"
+            aria-label={t("back")}
             className="flex h-[52px] w-[52px] shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-strong text-foreground transition-colors hover:border-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -261,11 +268,11 @@ export function AppraisalForm({ propertyTypes }: { propertyTypes: string[] }) {
             {pending ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-                Enviando…
+                {t("sending")}
               </>
             ) : (
               <>
-                Solicitar tasación
+                {t("submit")}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </>
             )}

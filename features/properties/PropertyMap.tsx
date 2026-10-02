@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Crosshair, Home } from "lucide-react";
 import {
   Map,
@@ -19,16 +20,8 @@ type PropertyMapProps = {
 
 const DEFAULT_ZOOM = 15;
 
-// Textos del aviso de "gestos cooperativos": el mapa no roba el scroll de
-// la página; para hacer zoom con la rueda hace falta Ctrl/⌘, y en móvil
-// dos dedos.
-const MAP_LOCALE = {
-  "CooperativeGesturesHandler.WindowsHelpText": "Usá Ctrl + rueda para hacer zoom en el mapa",
-  "CooperativeGesturesHandler.MacHelpText": "Usá ⌘ + rueda para hacer zoom en el mapa",
-  "CooperativeGesturesHandler.MobileHelpText": "Usá dos dedos para mover el mapa",
-};
-
 function RecenterButton({ lat, lng }: { lat: number; lng: number }) {
+  const t = useTranslations("property.location");
   const { map } = useMap();
   const recenter = useCallback(() => {
     map?.flyTo({ center: [lng, lat], zoom: DEFAULT_ZOOM, bearing: 0, pitch: 0, duration: 800 });
@@ -38,20 +31,32 @@ function RecenterButton({ lat, lng }: { lat: number; lng: number }) {
     <button
       type="button"
       onClick={recenter}
-      aria-label="Centrar en la propiedad"
+      aria-label={t("recenterAria")}
       className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
     >
       <Crosshair className="size-3.5" />
-      Centrar
+      {t("recenter")}
     </button>
   );
 }
 
 export default function PropertyMap({ lat, lng, title }: PropertyMapProps) {
+  const t = useTranslations("property.location");
+  const controls = useTranslations("common.map");
+  // Textos del aviso de "gestos cooperativos": el mapa no roba el scroll de
+  // la página; para hacer zoom con la rueda hace falta Ctrl/⌘, y en móvil
+  // dos dedos.
+  const mapLocale = {
+    "Map.Title": controls("title"),
+    "AttributionControl.ToggleAttribution": controls("toggleAttribution"),
+    "CooperativeGesturesHandler.WindowsHelpText": t("gesturesWindows"),
+    "CooperativeGesturesHandler.MacHelpText": t("gesturesMac"),
+    "CooperativeGesturesHandler.MobileHelpText": t("gesturesMobile"),
+  };
   if (typeof lat !== "number" || typeof lng !== "number") {
     return (
       <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
-        Ubicación no disponible
+        {t("unavailable")}
       </div>
     );
   }
@@ -65,7 +70,7 @@ export default function PropertyMap({ lat, lng, title }: PropertyMapProps) {
       minZoom={4}
       maxZoom={19}
       cooperativeGestures
-      locale={MAP_LOCALE}
+      locale={mapLocale}
       className="h-full w-full"
     >
       <MapMarker longitude={lng} latitude={lat} anchor="bottom">
@@ -85,7 +90,7 @@ export default function PropertyMap({ lat, lng, title }: PropertyMapProps) {
       </MapMarker>
 
       <RecenterButton lat={lat} lng={lng} />
-      <MapControls position="top-right" showZoom showCompass showFullscreen />
+      <MapControls position="top-right" showZoom showCompass showFullscreen labels={{ zoomIn: controls("zoomIn"), zoomOut: controls("zoomOut"), resetNorth: controls("resetNorth"), fullscreen: controls("fullscreen") }} />
     </Map>
   );
 }

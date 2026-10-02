@@ -1,7 +1,8 @@
 "use client";
 
 import { useId, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { ArrowRight } from "lucide-react";
 import {
   LocationCombobox,
@@ -11,11 +12,6 @@ import {
 import { ChoiceGroup, SegmentedControl } from "@/features/public/v2/ChoiceGroup";
 
 export type PropertyTypeOption = { id: number; name: string };
-
-const OPERATIONS = [
-  { label: "Comprar", value: "venta" },
-  { label: "Alquilar", value: "alquiler" },
-];
 
 export const BEDROOM_OPTIONS = [
   { label: "Todos", value: "" },
@@ -36,7 +32,13 @@ export function HeroSearch({
   locations: LocationSuggestion[];
   types: PropertyTypeOption[];
 }) {
+  const t = useTranslations("home.search");
   const router = useRouter();
+  const operations = [
+    { label: t("buy"), value: "venta" },
+    { label: t("rent"), value: "alquiler" },
+  ];
+  const bedroomOptions = BEDROOM_OPTIONS.map((o) => (o.value === "" ? { ...o, label: t("all") } : o));
   const [operation, setOperation] = useState("venta");
   const [typeId, setTypeId] = useState("");
   const [bedrooms, setBedrooms] = useState("");
@@ -56,16 +58,16 @@ export function HeroSearch({
   return (
     <form
       role="search"
-      aria-label="Buscar propiedades"
+      aria-label={t("aria")}
       onSubmit={handleSearch}
       className="flex w-full flex-col gap-6 rounded-3xl bg-card p-5 shadow-[0_30px_60px_-30px_rgb(21_21_21/0.55)] md:p-7"
     >
-      <SegmentedControl label="Operación" options={OPERATIONS} value={operation} onChange={setOperation} />
+      <SegmentedControl label={t("operation")} options={operations} value={operation} onChange={setOperation} />
 
       {types.length > 0 && (
         <ChoiceGroup
-          label="Tipo de propiedad"
-          options={[{ label: "Todos", value: "" }, ...types.map((t) => ({ label: t.name, value: String(t.id) }))]}
+          label={t("type")}
+          options={[{ label: t("all"), value: "" }, ...types.map((ty) => ({ label: ty.name, value: String(ty.id) }))]}
           value={typeId}
           onChange={setTypeId}
           layoutId="hero-type"
@@ -74,7 +76,7 @@ export function HeroSearch({
 
       <div className="flex flex-col gap-2">
         <span id={zoneId} className="text-sm font-medium text-foreground">
-          Zona
+          {t("zone")}
         </span>
         <div
           aria-labelledby={zoneId}
@@ -84,13 +86,13 @@ export function HeroSearch({
         </div>
       </div>
 
-      <ChoiceGroup label="Dormitorios" options={BEDROOM_OPTIONS} value={bedrooms} onChange={setBedrooms} layoutId="hero-bedrooms" />
+      <ChoiceGroup label={t("bedrooms")} options={bedroomOptions} value={bedrooms} onChange={setBedrooms} layoutId="hero-bedrooms" />
 
       <button
         type="submit"
         className="group flex h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-pop text-base font-semibold text-foreground transition-[background-color,transform] hover:bg-pop-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card active:scale-[0.98]"
       >
-        Buscar propiedades
+        {t("submit")}
         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
       </button>
     </form>

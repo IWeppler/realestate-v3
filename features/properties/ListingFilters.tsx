@@ -1,7 +1,8 @@
 "use client";
 
 import { useId, useState, useTransition } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { Loader2, SlidersHorizontal } from "lucide-react";
 import { useFilterParams } from "@/features/properties/useFilterParams";
 import { PropertySearchCombobox } from "@/features/properties/PropertySearchCombobox";
@@ -22,19 +23,6 @@ export type FilterOptions = {
   locations: LocationSuggestion[];
 };
 
-const OPERATIONS = [
-  { value: "", label: "Todas" },
-  { value: "venta", label: "Venta" },
-  { value: "alquiler", label: "Alquiler" },
-];
-
-const BATHROOMS = [
-  { label: "Todos", value: "" },
-  { label: "1+", value: "1" },
-  { label: "2+", value: "2" },
-  { label: "3+", value: "3" },
-];
-
 const AMENITIES_PREVIEW = 8;
 
 // Filtros del listado apilados en vertical, con el mismo lenguaje que el
@@ -42,6 +30,7 @@ const AMENITIES_PREVIEW = 8;
 // aplicar): la URL es la fuente de verdad y el listado se re-renderiza en
 // el servidor. Se muestran dentro del panel lateral (FiltersSheet).
 export function ListingFilters({ types, amenities, locations }: FilterOptions) {
+  const t = useTranslations("listing.filters");
   const router = useRouter();
   const pathname = usePathname();
   const { searchParams, activeCount } = useFilterParams();
@@ -76,14 +65,26 @@ export function ListingFilters({ types, amenities, locations }: FilterOptions) {
       for (const key of ["tipo", "typeId", "loc", "q", "bedrooms", "bathrooms", "amenities"]) p.delete(key);
     });
 
+  const operations = [
+    { value: "", label: t("operationAll") },
+    { value: "venta", label: t("operationSale") },
+    { value: "alquiler", label: t("operationRent") },
+  ];
+  const bathrooms = [
+    { label: t("all"), value: "" },
+    { label: "1+", value: "1" },
+    { label: "2+", value: "2" },
+    { label: "3+", value: "3" },
+  ];
+
   const visibleAmenities = showAllAmenities ? amenities : amenities.slice(0, AMENITIES_PREVIEW);
 
   return (
     <div className="flex flex-col gap-7">
       <div className="flex items-center justify-between gap-4">
         <p className="flex items-center gap-2 font-display text-xl font-semibold tracking-[-0.01em] text-foreground">
-          Filtros
-          {pending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-label="Actualizando" />}
+          {t("title")}
+          {pending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-label={t("updating")} />}
         </p>
         {hasAny && (
           <button
@@ -91,27 +92,27 @@ export function ListingFilters({ types, amenities, locations }: FilterOptions) {
             onClick={clearAll}
             className="cursor-pointer rounded-sm text-sm font-medium text-fg-secondary underline underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            Limpiar
+            {t("clear")}
           </button>
         )}
       </div>
 
       <SegmentedControl
-        label="Operación"
-        options={OPERATIONS}
+        label={t("operation")}
+        options={operations}
         value={searchParams.get("tipo") ?? ""}
         onChange={(v) => setParam("tipo", v)}
       />
 
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-foreground">Zona o dirección</span>
+        <span className="text-sm font-medium text-foreground">{t("locationLabel")}</span>
         <PropertySearchCombobox locations={locations} />
       </div>
 
       {types.length > 0 && (
         <ChoiceGroup
-          label="Tipo de propiedad"
-          options={[{ label: "Todos", value: "" }, ...types.map((t) => ({ label: t.name, value: String(t.id) }))]}
+          label={t("propertyType")}
+          options={[{ label: t("all"), value: "" }, ...types.map((t) => ({ label: t.name, value: String(t.id) }))]}
           value={searchParams.get("typeId") ?? ""}
           onChange={(v) => setParam("typeId", v)}
           layoutId={`${uid}-type`}
@@ -119,16 +120,16 @@ export function ListingFilters({ types, amenities, locations }: FilterOptions) {
       )}
 
       <ChoiceGroup
-        label="Dormitorios"
-        options={BEDROOM_OPTIONS}
+        label={t("bedrooms")}
+        options={BEDROOM_OPTIONS.map((o) => (o.value === "" ? { ...o, label: t("all") } : o))}
         value={searchParams.get("bedrooms") ?? ""}
         onChange={(v) => setParam("bedrooms", v)}
         layoutId={`${uid}-bedrooms`}
       />
 
       <ChoiceGroup
-        label="Baños"
-        options={BATHROOMS}
+        label={t("bathrooms")}
+        options={bathrooms}
         value={searchParams.get("bathrooms") ?? ""}
         onChange={(v) => setParam("bathrooms", v)}
         layoutId={`${uid}-bathrooms`}
@@ -137,7 +138,7 @@ export function ListingFilters({ types, amenities, locations }: FilterOptions) {
       {amenities.length > 0 && (
         <div className="flex flex-col gap-2">
           <span id={amenitiesLabelId} className="text-sm font-medium text-foreground">
-            Amenities
+            {t("amenities")}
           </span>
           <div role="group" aria-labelledby={amenitiesLabelId} className="flex flex-wrap gap-1.5">
             {visibleAmenities.map((a) => {
@@ -166,7 +167,7 @@ export function ListingFilters({ types, amenities, locations }: FilterOptions) {
               aria-expanded={showAllAmenities}
               className="w-fit cursor-pointer rounded-sm text-sm font-medium text-foreground underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
-              {showAllAmenities ? "Ver menos" : `Ver todos (${amenities.length})`}
+              {showAllAmenities ? t("seeLess") : t("seeAllAmenities", { count: amenities.length })}
             </button>
           )}
         </div>
@@ -182,6 +183,7 @@ export function FiltersSheet({
   count,
   ...options
 }: FilterOptions & { count: number }) {
+  const t = useTranslations("listing.filters");
   const [open, setOpen] = useState(false);
   const { activeCount, searchParams } = useFilterParams();
   const total = activeCount + (searchParams.get("tipo") ? 1 : 0);
@@ -194,13 +196,13 @@ export function FiltersSheet({
           className="inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full border border-border-strong bg-card px-4 text-sm font-medium text-foreground transition-colors hover:border-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-          Filtros
+          {t("title")}
           {total > 0 && <span className="rounded-full bg-pop px-2 py-0.5 text-xs text-foreground tabular-nums">{total}</span>}
         </button>
       </SheetTrigger>
       <SheetContent side="right" className="flex w-full flex-col gap-0 bg-background p-0 sm:max-w-md">
-        <SheetTitle className="sr-only">Filtros</SheetTitle>
-        <SheetDescription className="sr-only">Los cambios se aplican al listado al instante.</SheetDescription>
+        <SheetTitle className="sr-only">{t("title")}</SheetTitle>
+        <SheetDescription className="sr-only">{t("panelDescription")}</SheetDescription>
         <div className="flex-1 overflow-y-auto overscroll-contain px-5 pt-14 pb-8">
           <ListingFilters {...options} />
         </div>
@@ -210,7 +212,7 @@ export function FiltersSheet({
             onClick={() => setOpen(false)}
             className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-pop text-base font-semibold text-foreground transition-[background-color,transform] hover:bg-pop-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.98]"
           >
-            {count === 0 ? "Sin resultados" : `Ver ${count} ${count === 1 ? "propiedad" : "propiedades"}`}
+            {count === 0 ? t("noResults") : t("viewResults", { count })}
           </button>
         </div>
       </SheetContent>

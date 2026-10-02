@@ -2,6 +2,7 @@
 
 import { after } from "next/server";
 import { z } from "zod";
+import { getTranslations } from "next-intl/server";
 import { supabaseAdmin, nextAgentForLead } from "@/lib/supabase-admin";
 import {
   getAvailability,
@@ -62,11 +63,10 @@ type CalendarEventOpts = {
   title: string;
   address: string;
   url: string;
+  // Textos del evento: los ve el visitante en su calendario, van en su idioma.
+  summary: string;
+  description: string;
 };
-
-const eventSummary = (title: string) => `Visita: ${title}`;
-const eventDescription = (url: string) =>
-  `Visita coordinada con ${BRAND.name}. Ficha: ${url}`;
 
 // Links "agregar al calendario": abren Google Calendar / Outlook con el
 // evento precargado y el visitante solo confirma. No requieren OAuth ni
@@ -75,9 +75,9 @@ function buildGoogleCalendarUrl(opts: CalendarEventOpts) {
   const { start, end } = visitRange(opts.date, opts.time);
   const params = new URLSearchParams({
     action: "TEMPLATE",
-    text: eventSummary(opts.title),
+    text: opts.summary,
     dates: `${fmtUtc(start)}/${fmtUtc(end)}`,
-    details: eventDescription(opts.url),
+    details: opts.description,
     location: opts.address,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -88,10 +88,10 @@ function buildOutlookCalendarUrl(opts: CalendarEventOpts) {
   const params = new URLSearchParams({
     path: "/calendar/action/compose",
     rru: "addevent",
-    subject: eventSummary(opts.title),
+    subject: opts.summary,
     startdt: start.toISOString(),
     enddt: end.toISOString(),
-    body: eventDescription(opts.url),
+    body: opts.description,
     location: opts.address,
   });
   return `https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`;
@@ -116,9 +116,9 @@ function buildIcs(opts: CalendarEventOpts & { uid: string }) {
     `DTSTAMP:${fmt(new Date())}`,
     `DTSTART:${fmt(start)}`,
     `DTEND:${fmt(end)}`,
-    `SUMMARY:${esc(eventSummary(opts.title))}`,
+    `SUMMARY:${esc(opts.summary)}`,
     `LOCATION:${esc(opts.address)}`,
-    `DESCRIPTION:${esc(eventDescription(opts.url))}`,
+    `DESCRIPTION:${esc(opts.description)}`,
     `URL:${opts.url}`,
     "END:VEVENT",
     "END:VCALENDAR",
@@ -129,6 +129,7 @@ export async function createBookingAction(
   _prev: BookingState,
   formData: FormData
 ): Promise<BookingState> {
+  const t = await getTranslations("booking.actions");
   const parsed = bookingSchema.safeParse({
     propertyId: formData.get("propertyId"),
     date: formData.get("date"),
@@ -139,7 +140,7 @@ export async function createBookingAction(
     message: formData.get("message"),
   });
   if (!parsed.success) {
-    return { success: false, message: "Revisá los datos del formulario." };
+    return { success: false, message: t("invalid") };
   }
   const { propertyId, date, time, name, phone, email, message } = parsed.data;
 
@@ -150,11 +151,11 @@ export async function createBookingAction(
     )
     .eq("id", propertyId)
     .single();
-  if (!property) return { success: false, message: "La propiedad no existe." };
+  if (!property) return { success: false, message: t("propertyNotFound") };
   if (property.status !== "EN_VENTA" && property.status !== "EN_ALQUILER") {
     return {
       success: false,
-      message: "Esta propiedad ya no está disponible para visitas.",
+      message: t("propertyUnavailable"),
     };
   }
 
@@ -167,7 +168,7 @@ export async function createBookingAction(
   if (!agentId) {
     return {
       success: false,
-      message: "No hay un asesor disponible en este momento.",
+      message: t("noAgent"),
     };
   }
 
@@ -176,7 +177,7 @@ export async function createBookingAction(
   if (!isSlotBookable(availability, date, time)) {
     return {
       success: false,
-      message: "Ese turno ya no está disponible. Elegí otro.",
+      message: t("slotTaken"),
     };
   }
 
@@ -199,7 +200,7 @@ export async function createBookingAction(
   if (leadError || !lead) {
     return {
       success: false,
-      message: `No se pudo registrar la solicitud: ${leadError?.message}`,
+      message: t("leadFailed", { error: leadError?.message ?? "" }),
     };
   }
 
@@ -219,7 +220,7 @@ export async function createBookingAction(
   if (eventError || !event) {
     return {
       success: false,
-      message: `Se registró tu consulta pero no el turno: ${eventError?.message}`,
+      message: t("eventFailed", { error: eventError?.message ?? "" }),
     };
   }
 
@@ -259,11 +260,13 @@ export async function createBookingAction(
     title: property.title,
     address,
     url: propertyUrl(propertyId),
+    summary: t("calendarSummary", { title: property.title }),
+    description: t("calendarDescription", { brand: BRAND.name, url: propertyUrl(propertyId) }),
   };
 
   return {
     success: true,
-    message: "¡Visita agendada! Te vamos a confirmar por WhatsApp o teléfono.",
+    message: t("success"),
     booking: {
       date,
       time,

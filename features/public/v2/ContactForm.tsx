@@ -1,11 +1,11 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { createContactLeadAction } from "@/features/actions/createContactLeadAction";
 import { whatsappLink } from "@/lib/brand";
-import { CONTACT_CTA_LABEL } from "@/features/public/v2/content";
 import { cn } from "@/lib/utils";
 import { Field, inputClass, invalidProps, submitClass } from "@/features/public/v2/formParts";
 
@@ -15,17 +15,24 @@ type Errors = Partial<Record<"name" | "phone" | "email" | "message", string>>;
 const initialState: FormState = { success: false, message: "" };
 
 // Mismos valores que acepta el schema de createContactLeadAction.
-const TOPICS = ["Comprar", "Alquilar", "Vender", "Otra consulta"] as const;
+const TOPICS = [
+  { value: "Comprar", key: "buy" },
+  { value: "Alquilar", key: "rent" },
+  { value: "Vender", key: "sell" },
+  { value: "Otra consulta", key: "other" },
+] as const;
+
+type T = ReturnType<typeof useTranslations<"contact.form">>;
 
 // Mismas reglas que el schema de la Server Action, para avisar en el
 // campo antes de enviar. El servidor vuelve a validar.
-function validate(data: FormData): Errors {
+function validate(data: FormData, t: T): Errors {
   const v = (k: string) => String(data.get(k) ?? "").trim();
   const errors: Errors = {};
-  if (v("name").length < 3) errors.name = "Escribí tu nombre.";
-  if (v("phone").replace(/\D/g, "").length < 8) errors.phone = "Escribí un teléfono con código de área.";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("email"))) errors.email = "Escribí un email válido.";
-  if (v("message").length < 10) errors.message = "Contanos un poco más (al menos 10 caracteres).";
+  if (v("name").length < 3) errors.name = t("errors.name");
+  if (v("phone").replace(/\D/g, "").length < 8) errors.phone = t("errors.phone");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("email"))) errors.email = t("errors.email");
+  if (v("message").length < 10) errors.message = t("errors.message");
   return errors;
 }
 
@@ -33,6 +40,8 @@ function validate(data: FormData): Errors {
 // que el agente sepa de qué se trata), datos y mensaje. Al enviar bien se
 // reemplaza por la confirmación.
 export function ContactForm() {
+  const t = useTranslations("contact.form");
+  const tc = useTranslations("common");
   const [state, formAction, pending] = useActionState(createContactLeadAction, initialState);
   const [errors, setErrors] = useState<Errors>({});
 
@@ -43,19 +52,19 @@ export function ContactForm() {
           <Check className="h-6 w-6" aria-hidden="true" />
         </span>
         <h2 className="font-display text-4xl leading-[1] font-medium tracking-[-0.035em] text-foreground">
-          Recibimos tu mensaje
+          {t("successTitle")}
         </h2>
         <p className="max-w-[40ch] text-lg leading-relaxed text-fg-secondary">
-          Un agente te va a responder por teléfono o por email. Si es urgente, escribinos por WhatsApp.
+          {t("successBody")}
         </p>
         <a
-          href={whatsappLink("Hola, acabo de dejar un mensaje en la web.")}
+          href={whatsappLink(t("successWhatsappMessage"))}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex h-[52px] items-center gap-2 rounded-full bg-main px-7 text-base font-semibold whitespace-nowrap text-primary-foreground transition-colors hover:bg-main-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <FaWhatsapp className="h-5 w-5" aria-hidden="true" />
-          {CONTACT_CTA_LABEL}
+          {tc("contactCta")}
         </a>
       </div>
     );
@@ -68,7 +77,7 @@ export function ContactForm() {
       noValidate
       action={formAction}
       onSubmit={(e) => {
-        const found = validate(new FormData(e.currentTarget));
+        const found = validate(new FormData(e.currentTarget), t);
         setErrors(found);
         if (Object.keys(found).length > 0) {
           e.preventDefault();
@@ -90,14 +99,14 @@ export function ContactForm() {
     >
       <fieldset>
         <legend className="mb-3 text-sm font-medium text-foreground">
-          ¿Sobre qué es tu consulta? <span className="font-normal text-fg-secondary">(opcional)</span>
+          {t("topicLegend")} <span className="font-normal text-fg-secondary">{t("optional")}</span>
         </legend>
         <div className="flex flex-wrap gap-2">
-          {TOPICS.map((t) => (
-            <label key={t}>
-              <input type="radio" name="topic" value={t} className="peer sr-only" />
+          {TOPICS.map((topic) => (
+            <label key={topic.value}>
+              <input type="radio" name="topic" value={topic.value} className="peer sr-only" />
               <span className="inline-flex h-9 cursor-pointer items-center rounded-full border border-border-strong px-3.5 text-sm font-medium text-fg-secondary transition-colors peer-checked:border-main peer-checked:bg-main peer-checked:text-primary-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 hover:border-foreground hover:text-foreground">
-                {t}
+                {t(`topics.${topic.key}`)}
               </span>
             </label>
           ))}
@@ -105,25 +114,25 @@ export function ContactForm() {
       </fieldset>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <Field id="name" label="Nombre y apellido" error={errors.name}>
+        <Field id="name" label={t("name")} error={errors.name}>
           <input id="name" name="name" autoComplete="name" className={inputClass} {...described("name")} />
         </Field>
-        <Field id="phone" label="Teléfono" error={errors.phone}>
+        <Field id="phone" label={t("phone")} error={errors.phone}>
           <input id="phone" name="phone" type="tel" autoComplete="tel" inputMode="tel" className={inputClass} {...described("phone")} />
         </Field>
       </div>
 
-      <Field id="email" label="Email" error={errors.email}>
+      <Field id="email" label={t("email")} error={errors.email}>
         <input id="email" name="email" type="email" autoComplete="email" className={inputClass} {...described("email")} />
       </Field>
 
-      <Field id="message" label="Mensaje" error={errors.message}>
+      <Field id="message" label={t("message")} error={errors.message}>
         <textarea
           id="message"
           name="message"
           rows={4}
           className={cn(inputClass, "h-auto resize-none py-3 leading-relaxed")}
-          placeholder="Ej.: busco una casa de 3 dormitorios en Funes, hasta USD 150.000."
+          placeholder={t("messagePlaceholder")}
           {...described("message")}
         />
       </Field>
@@ -138,11 +147,11 @@ export function ContactForm() {
         {pending ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-            Enviando…
+            {t("sending")}
           </>
         ) : (
           <>
-            Enviar mensaje
+            {t("submit")}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
           </>
         )}

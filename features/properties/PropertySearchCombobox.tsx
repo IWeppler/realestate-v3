@@ -1,7 +1,9 @@
 "use client";
 
 import { useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { Loader2 } from "lucide-react";
 import {
   LocationCombobox,
@@ -13,6 +15,7 @@ import {
 // (varias, separadas por coma) y el texto libre a `q`. La URL es la fuente
 // de verdad, así los chips quedan en sync con los filtros de Ubicación.
 export function PropertySearchCombobox({ locations }: { locations: LocationSuggestion[] }) {
+  const t = useTranslations("listing.search");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -42,7 +45,7 @@ export function PropertySearchCombobox({ locations }: { locations: LocationSugge
         className="flex-1"
         inputClassName="text-sm"
       />
-      {pending && <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin text-muted-foreground" aria-label="Buscando" />}
+      {pending && <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin text-muted-foreground" aria-label={t("searching")} />}
     </div>
   );
 }

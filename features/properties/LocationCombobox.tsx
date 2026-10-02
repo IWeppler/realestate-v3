@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { MapPin, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +40,7 @@ export function LocationCombobox({
   value,
   onChange,
   placement = "bottom",
-  placeholder = "Barrio, ciudad o dirección",
+  placeholder,
   className,
   inputClassName,
 }: {
@@ -52,6 +53,7 @@ export function LocationCombobox({
   className?: string;
   inputClassName?: string;
 }) {
+  const t = useTranslations("listing.search");
   const baseId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
@@ -130,7 +132,7 @@ export function LocationCombobox({
                 e.stopPropagation();
                 removeLoc(city);
               }}
-              aria-label={`Quitar ${city}`}
+              aria-label={t("removeCity", { city })}
               className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-main hover:text-primary-foreground"
             >
               <X className="h-3 w-3" aria-hidden="true" />
@@ -147,7 +149,7 @@ export function LocationCombobox({
                 e.stopPropagation();
                 onChange({ ...value, q: "" });
               }}
-              aria-label="Quitar búsqueda de texto"
+              aria-label={t("removeText")}
               className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-foreground hover:text-background"
             >
               <X className="h-3 w-3" aria-hidden="true" />
@@ -156,7 +158,7 @@ export function LocationCombobox({
         )}
 
         <label htmlFor={`${baseId}-input`} className="sr-only">
-          Buscar por ciudad, barrio o dirección
+          {t("inputLabel")}
         </label>
         <input
           ref={inputRef}
@@ -169,7 +171,7 @@ export function LocationCombobox({
           aria-activedescendant={expanded ? options[active]?.id : undefined}
           autoComplete="off"
           value={text}
-          placeholder={hasChips ? "Agregar otra zona" : placeholder}
+          placeholder={hasChips ? t("addAnother") : (placeholder ?? t("placeholder"))}
           onChange={(e) => {
             setText(e.target.value);
             setActive(0);
@@ -187,14 +189,14 @@ export function LocationCombobox({
 
       {trimmed.length > 0 && trimmed.length < MIN_CHARS && open && (
         <p className="sr-only" aria-live="polite">
-          Escribí al menos {MIN_CHARS} letras para ver sugerencias
+          {t("minChars", { count: MIN_CHARS })}
         </p>
       )}
 
       <ul
         id={`${baseId}-list`}
         role="listbox"
-        aria-label="Sugerencias"
+        aria-label={t("suggestions")}
         hidden={!expanded}
         className={cn(
           "absolute right-0 left-0 z-30 max-h-72 overflow-y-auto rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-[0_16px_40px_-12px_rgb(28_33_38/0.35)]",
@@ -227,14 +229,14 @@ export function LocationCombobox({
                   <span className="text-muted-foreground">, {opt.loc.province}</span>
                 </span>
                 <span className="shrink-0 text-xs text-muted-foreground">
-                  {opt.loc.count} {opt.loc.count === 1 ? "propiedad" : "propiedades"}
+                  {t("propertyCount", { count: opt.loc.count })}
                 </span>
               </>
             ) : (
               <>
                 <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <span className="min-w-0 flex-1 truncate text-foreground">
-                  Buscar “{opt.text}” en títulos y direcciones
+                  {t("searchText", { text: opt.text })}
                 </span>
               </>
             )}

@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { getTranslations } from "next-intl/server";
 import { supabaseAdmin, nextAgentForLead } from "@/lib/supabase-admin";
 import { BRAND } from "@/lib/brand";
 import { criteriaQuery, describeCriteria, pickCriteria } from "@/features/public/searchCriteria";
@@ -19,16 +20,16 @@ const alertSchema = z.object({
 
 type FormState = { success: boolean; message: string };
 
-const FAILED = "No pudimos guardar tu alerta. Probá de nuevo en unos minutos o escribinos por WhatsApp.";
-
 export async function createSearchAlertAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const t = await getTranslations("searchAlert.actions");
+  const FAILED = t("failed");
   const validation = alertSchema.safeParse({
     name: formData.get("name"),
     phone: formData.get("phone"),
     email: formData.get("email") ?? "",
   });
   if (!validation.success) {
-    return { success: false, message: "Revisá tu nombre y teléfono." };
+    return { success: false, message: t("invalid") };
   }
   const { name, phone, email } = validation.data;
 
@@ -77,5 +78,5 @@ export async function createSearchAlertAction(_prev: FormState, formData: FormDa
     return { success: false, message: FAILED };
   }
 
-  return { success: true, message: "Listo, te avisamos apenas entre algo así." };
+  return { success: true, message: t("success") };
 }

@@ -1,28 +1,27 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
+import { useTranslations } from "next-intl";
 import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { BRAND, whatsappLink } from "@/lib/brand";
-import { CONTACT_CTA_LABEL } from "@/features/public/v2/content";
+import { LocaleSwitcher } from "@/features/public/v2/LocaleSwitcher";
 import { EASE } from "@/features/public/v2/motion";
 
 // Links de la barra en desktop. "Contacto" queda solo en el menú móvil y
 // el footer: en la barra esa intención ya la cubre el botón de WhatsApp.
+// `key`: el texto en common.nav (messages/<idioma>/common.json).
 const NAV_LINKS = [
-  { href: "/propiedades", label: "Propiedades" },
-  { href: "/zonas", label: "Zonas" },
-  { href: "/tasar", label: "Tasar mi propiedad" },
-  { href: "/nosotros", label: "Nosotros" },
-];
+  { href: "/propiedades", key: "properties" },
+  { href: "/zonas", key: "zones" },
+  { href: "/tasar", key: "appraise" },
+  { href: "/nosotros", key: "about" },
+] as const;
 
-const MOBILE_LINKS = [...NAV_LINKS, { href: "/contacto", label: "Contacto" }];
-
-const WHATSAPP_MESSAGE = "Hola, quería hacer una consulta.";
+const MOBILE_LINKS = [...NAV_LINKS, { href: "/contacto", key: "contact" }] as const;
 
 // Logo: arco naranja (un umbral, una puerta) + nombre. Escala con el
 // tamaño de letra del contenedor (header y footer).
@@ -43,6 +42,7 @@ export function BrandMark({ className = "" }: { className?: string }) {
 // completa con los links en tipografía grande. Con "reducir movimiento"
 // la capa solo hace un fundido.
 export function SiteHeader() {
+  const t = useTranslations("common");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const [hidden, setHidden] = useHideOnScroll();
@@ -97,7 +97,7 @@ export function SiteHeader() {
         href="#contenido"
         className="sr-only z-[60] rounded-full bg-card px-4 py-2 text-sm font-semibold text-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
       >
-        Saltar al contenido
+        {t("header.skipToContent")}
       </a>
 
       <motion.header
@@ -106,6 +106,9 @@ export function SiteHeader() {
             ? "bg-transparent text-background"
             : "bg-background/90 text-foreground backdrop-blur-md"
         }`}
+        // Nombre propio en las transiciones de página: queda quieto y por
+        // encima de la foto que viaja de la tarjeta a la ficha.
+        style={{ viewTransitionName: "site-header" }}
         initial={false}
         animate={{ y: hidden && !open ? "-100%" : "0%" }}
         transition={reduce ? { duration: 0 } : { duration: 0.3, ease: EASE }}
@@ -121,7 +124,7 @@ export function SiteHeader() {
             <BrandMark />
           </Link>
 
-          <nav aria-label="Principal" className="hidden lg:block">
+          <nav aria-label={t("header.mainNav")} className="hidden lg:block">
             <ul className="flex items-center gap-1">
               {NAV_LINKS.map((link) => {
                 const active = pathname === link.href;
@@ -132,7 +135,7 @@ export function SiteHeader() {
                       aria-current={active ? "page" : undefined}
                       className="relative rounded-full px-4 py-2 text-[15px] font-medium whitespace-nowrap text-fg-secondary transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-[current=page]:text-foreground"
                     >
-                      {link.label}
+                      {t(`nav.${link.key}`)}
                     </Link>
                   </li>
                 );
@@ -141,14 +144,15 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <LocaleSwitcher className="hidden h-10 items-center rounded-full px-3 text-sm font-semibold text-fg-secondary transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:inline-flex" />
             <a
-              href={whatsappLink(WHATSAPP_MESSAGE)}
+              href={whatsappLink(t("header.whatsappMessage"))}
               target="_blank"
               rel="noopener noreferrer"
               className="hidden h-10 items-center gap-2 rounded-full bg-main px-5 text-sm font-semibold whitespace-nowrap text-primary-foreground transition-[background-color,transform] hover:bg-main-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-[0.98] lg:inline-flex"
             >
               <FaWhatsapp className="h-4 w-4" aria-hidden="true" />
-              {CONTACT_CTA_LABEL}
+              {t("contactCta")}
             </a>
 
             <button
@@ -157,7 +161,7 @@ export function SiteHeader() {
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-controls="site-menu"
-              aria-label={open ? "Cerrar menú" : "Abrir menú"}
+              aria-label={open ? t("header.closeMenu") : t("header.openMenu")}
               className="group -mr-2 flex h-11 cursor-pointer items-center gap-3 rounded-full px-2 text-[15px] font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current lg:hidden"
             >
               {/* Etiqueta que cambia con el estado; el ancho fijo evita que el ícono salte. */}
@@ -168,12 +172,12 @@ export function SiteHeader() {
                 <span
                   className={`absolute inset-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? "-translate-y-full" : ""}`}
                 >
-                  Menú
+                  {t("header.menu")}
                 </span>
                 <span
                   className={`absolute inset-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? "" : "translate-y-full"}`}
                 >
-                  Cerrar
+                  {t("header.close")}
                 </span>
               </span>
               {/* Dos líneas que se cruzan en una X al abrir. */}
@@ -200,7 +204,7 @@ export function SiteHeader() {
             id="site-menu"
             role="dialog"
             aria-modal="true"
-            aria-label="Menú"
+            aria-label={t("header.menu")}
             className="fixed inset-0 z-40 overflow-y-auto bg-foreground text-background"
             initial={
               reduce ? { opacity: 0 } : { clipPath: "inset(0% 0% 100% 0%)" }
@@ -220,7 +224,7 @@ export function SiteHeader() {
           >
             <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col gap-12 px-4 pt-24 pb-10 md:px-8">
               <nav
-                aria-label="Menú móvil"
+                aria-label={t("header.mobileNav")}
                 className="flex flex-1 flex-col justify-center"
               >
                 <motion.ul
@@ -270,7 +274,7 @@ export function SiteHeader() {
                               }
                               transition={{ duration: 0.9, ease: EASE }}
                             >
-                              {link.label}
+                              {t(`nav.${link.key}`)}
                             </motion.span>
                           </span>
                           <ArrowUpRight
@@ -299,17 +303,21 @@ export function SiteHeader() {
                 exit={{ opacity: 0, transition: { duration: 0.2 } }}
               >
                 <a
-                  href={whatsappLink(WHATSAPP_MESSAGE)}
+                  href={whatsappLink(t("header.whatsappMessage"))}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-pop px-7 text-base font-semibold whitespace-nowrap text-foreground transition-[background-color,transform] hover:bg-pop-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-background active:scale-[0.98]"
                 >
                   <FaWhatsapp className="h-5 w-5" aria-hidden="true" />
-                  {CONTACT_CTA_LABEL}
+                  {t("contactCta")}
                 </a>
+                <LocaleSwitcher
+                  onClick={close}
+                  className="inline-flex h-11 w-fit items-center rounded-full border border-background/25 px-5 text-sm font-semibold text-background transition-colors hover:border-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-background"
+                />
                 <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <dt className="text-xs text-background/60">Email</dt>
+                    <dt className="text-xs text-background/60">{t("header.email")}</dt>
                     <dd className="mt-1">
                       <a
                         href={`mailto:${BRAND.email}`}
@@ -320,7 +328,7 @@ export function SiteHeader() {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-background/60">Teléfono</dt>
+                    <dt className="text-xs text-background/60">{t("header.phone")}</dt>
                     <dd className="mt-1 text-background">
                       {BRAND.phoneDisplay}
                     </dd>

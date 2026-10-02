@@ -1,0 +1,61 @@
+{
+  "metaTitle": "{brand} | Propiedades en venta y alquiler",
+  "hero": {
+    "title": "Encontrá dónde\nvas a vivir.",
+    "subtitle": "Casas, departamentos y terrenos en venta y alquiler, con asesoramiento de principio a fin."
+  },
+  "search": {
+    "aria": "Buscar propiedades",
+    "operation": "Operación",
+    "buy": "Comprar",
+    "rent": "Alquilar",
+    "type": "Tipo de propiedad",
+    "all": "Todos",
+    "zone": "Zona",
+    "bedrooms": "Dormitorios",
+    "submit": "Buscar propiedades"
+  },
+  "featured": {
+    "title": "Destacadas",
+    "subtitle": "Las propiedades que más se están consultando.",
+    "viewAll": "Ver todas"
+  },
+  "types": {
+    "title": "Explorá por tipo",
+    "available": "{count, plural, one {# disponible} other {# disponibles}}"
+  },
+  "trust": {
+    "title": "Quienes ya operaron con nosotros",
+    "stats": {
+      "years": {
+        "value": "18",
+        "label": "años en el mercado"
+      },
+      "deals": {
+        "value": "1.240",
+        "label": "operaciones cerradas"
+      },
+      "saleTime": {
+        "value": "37 días",
+        "label": "promedio de venta desde la tasación"
+      }
+    },
+    "testimonials": {
+      "sale": {
+        "quote": "Vendimos el departamento en cinco semanas. Nos explicaron cada paso y nunca tuvimos que perseguir a nadie por una respuesta.",
+        "name": "Mariana Sosa",
+        "role": "Vendió su departamento"
+      },
+      "purchase": {
+        "quote": "Buscábamos una casa con patio para los chicos. Nos mostraron tres opciones que encajaban de verdad, no veinte que no.",
+        "name": "Julián Ferreyra",
+        "role": "Compró su primera casa"
+      },
+      "owner": {
+        "quote": "Alquilo dos unidades con ellos hace cuatro años. Cobro en fecha, los contratos al día y cero sorpresas.",
+        "name": "Carla Benítez",
+        "role": "Propietaria"
+      }
+    }
+  }
+}

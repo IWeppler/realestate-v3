@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { ArrowRight } from "lucide-react";
 import PropertyCard from "@/features/properties/PropertyCard";
 import { SplitHeading, StaggerItem } from "@/features/public/v2/motion";
@@ -14,7 +15,8 @@ function fitGrid(list: PropertyCardData[]) {
 
 // Destacadas: las disponibles más consultadas. Grilla asimétrica con una
 // tarjeta grande (2x2) y el resto alrededor, así la primera manda.
-export function FeaturedListings({ properties }: { properties: PropertyCardData[] }) {
+export async function FeaturedListings({ properties }: { properties: PropertyCardData[] }) {
+  const t = await getTranslations("home.featured");
   const items = fitGrid(properties);
   if (items.length === 0) return null;
   const grid = items.length >= 3;
@@ -26,16 +28,16 @@ export function FeaturedListings({ properties }: { properties: PropertyCardData[
           <div>
             <SplitHeading
               id="v3-featured-title"
-              text="Destacadas"
+              text={t("title")}
               className="font-display text-5xl leading-[0.95] font-medium tracking-[-0.035em] text-foreground md:text-6xl"
             />
-            <p className="mt-4 max-w-[44ch] text-lg text-fg-secondary">Las propiedades que más se están consultando.</p>
+            <p className="mt-4 max-w-[44ch] text-lg text-fg-secondary">{t("subtitle")}</p>
           </div>
           <Link
             href="/propiedades"
             className="group hidden h-11 shrink-0 items-center gap-2 rounded-full border border-border-strong px-5 text-sm font-semibold whitespace-nowrap text-foreground transition-colors hover:bg-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:inline-flex"
           >
-            Ver todas
+            {t("viewAll")}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
           </Link>
         </div>
@@ -71,7 +73,7 @@ export function FeaturedListings({ properties }: { properties: PropertyCardData[
           href="/propiedades"
           className="mt-10 inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full border border-border-strong text-sm font-semibold text-foreground transition-colors hover:bg-card md:hidden"
         >
-          Ver todas
+          {t("viewAll")}
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>

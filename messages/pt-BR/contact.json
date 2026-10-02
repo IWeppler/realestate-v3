@@ -1,0 +1,82 @@
+{
+  "page": {
+    "metaTitle": "Contato",
+    "metaDescription": "Escreva pelo WhatsApp, ligue ou deixe uma mensagem: um corretor da {brand} responde você.",
+    "heading": "Conte o que você está procurando",
+    "intro": "Fale conosco pelo canal que for mais cômodo para você e um corretor vai responder.",
+    "channelsLabel": "Canais de contato",
+    "whatsapp": "WhatsApp",
+    "whatsappMessage": "Olá, gostaria de fazer uma consulta.",
+    "phone": "Telefone",
+    "email": "E-mail",
+    "office": "Escritório",
+    "formTitle": "Deixe uma mensagem",
+    "formIntro": "Respondemos por telefone ou por e-mail."
+  },
+  "form": {
+    "topicLegend": "Sobre o que é a sua consulta?",
+    "optional": "(opcional)",
+    "topics": {
+      "buy": "Comprar",
+      "rent": "Alugar",
+      "sell": "Vender",
+      "other": "Outra consulta"
+    },
+    "name": "Nome e sobrenome",
+    "phone": "Telefone",
+    "email": "E-mail",
+    "message": "Mensagem",
+    "messagePlaceholder": "Ex.: procuro uma casa de 3 dormitórios em Funes, até USD 150.000.",
+    "submit": "Enviar mensagem",
+    "sending": "Enviando…",
+    "errors": {
+      "name": "Digite seu nome.",
+      "phone": "Digite um telefone com DDD.",
+      "email": "Digite um e-mail válido.",
+      "message": "Conte um pouco mais (pelo menos 10 caracteres)."
+    },
+    "successTitle": "Recebemos sua mensagem",
+    "successBody": "Um corretor vai responder por telefone ou por e-mail. Se for urgente, escreva pelo WhatsApp.",
+    "successWhatsappMessage": "Olá, acabei de deixar uma mensagem no site."
+  },
+  "close": {
+    "title": "Não encontra o que procura?",
+    "body": "Muitos imóveis são vendidos antes de serem publicados. Conte o que você precisa e avisaremos.",
+    "whatsappMessage": "Olá, estou procurando um imóvel e gostaria de fazer uma consulta."
+  },
+  "property": {
+    "expensas": "+ {amount} de condomínio",
+    "book": "Agendar visita",
+    "unavailable": "Este imóvel não está mais disponível. Fale conosco e mostraremos outros parecidos.",
+    "whatsapp": "Consultar pelo WhatsApp",
+    "whatsappMessage": "Olá, tenho interesse no imóvel \"{title}\" ({url}). Podem me passar mais informações?",
+    "agentRole": "Corretor responsável",
+    "callAgent": "Ligar para {name}",
+    "inquiry": {
+      "successTitle": "Recebemos sua consulta",
+      "successBody": "O corretor deste imóvel vai entrar em contato.",
+      "name": "Nome e sobrenome",
+      "phone": "Telefone",
+      "email": "E-mail",
+      "optional": "(opcional)",
+      "message": "Consulta",
+      "defaultMessage": "Olá, tenho interesse em \"{title}\". Ainda está disponível?",
+      "submit": "Enviar consulta",
+      "sending": "Enviando…",
+      "errors": {
+        "name": "Digite seu nome.",
+        "phone": "Digite um telefone com DDD.",
+        "email": "Confira o e-mail."
+      }
+    }
+  },
+  "actions": {
+    "contactInvalid": "Dados inválidos. Revise o formulário.",
+    "contactFailed": "Não conseguimos enviar sua mensagem. Tente novamente em alguns minutos ou escreva pelo WhatsApp.",
+    "contactSuccess": "Mensagem enviada! Entraremos em contato em breve.",
+    "inquiryInvalid": "Erro nos dados enviados. Revise o formulário.",
+    "inquiryPropertyNotFound": "Não foi possível encontrar o imóvel.",
+    "inquiryFailed": "Não conseguimos enviar sua consulta. Tente novamente em alguns minutos ou escreva pelo WhatsApp.",
+    "inquirySuccess": "Consulta enviada! Entraremos em contato em breve."
+  }
+}

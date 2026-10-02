@@ -1,0 +1,26 @@
+{
+  "index": {
+    "metaTitle": "Zonas",
+    "metaDescription": "Propiedades en venta y alquiler por zona: elegí la ciudad y mirá lo que hay disponible.",
+    "title": "Explorá por zona",
+    "intro": "Elegí la ciudad y mirá todo lo que tenemos disponible ahí, en venta y en alquiler.",
+    "empty": "Todavía no hay propiedades publicadas.",
+    "available": "{count, plural, one {# disponible} other {# disponibles}}",
+    "from": "desde {price}"
+  },
+  "detail": {
+    "notFoundTitle": "Zona no encontrada",
+    "metaTitle": "Propiedades en {city}",
+    "metaDescription": "Casas, departamentos y terrenos en venta y alquiler en {location}. {count} propiedades disponibles.",
+    "title": "Propiedades en {city}",
+    "allZones": "Todas las zonas",
+    "statsAria": "{city} en números",
+    "forSale": "{count, plural, one {propiedad en venta} other {propiedades en venta}}",
+    "forRent": "{count, plural, one {propiedad en alquiler} other {propiedades en alquiler}}",
+    "lowestPrice": "precio de venta más bajo",
+    "alert": "Avisame cuando entre",
+    "viewOnMap": "Ver en el mapa",
+    "listingsAria": "Propiedades disponibles en {city}",
+    "otherZones": "Otras zonas"
+  }
+}

@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { ImageOff, MapPin, MapPinOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CardImage } from "@/features/properties/CardImage";
@@ -14,11 +15,16 @@ import {
   type MapProperty,
 } from "@/features/properties/PublicPropertiesMap";
 
+function MapLoading() {
+  const t = useTranslations("listing.map");
+  return <div className="h-full w-full animate-pulse bg-muted" aria-label={t("loading")} />;
+}
+
 // MapLibre solo en cliente. El placeholder ocupa el mismo lugar que el
 // mapa para no mover el layout al cargar.
 const PublicPropertiesMap = dynamic(() => import("@/features/properties/PublicPropertiesMap"), {
   ssr: false,
-  loading: () => <div className="h-full w-full animate-pulse bg-muted" aria-label="Cargando mapa" />,
+  loading: () => <MapLoading />,
 });
 
 // Vista mapa del listado público: panel de resultados + mapa con pines de
@@ -26,6 +32,8 @@ const PublicPropertiesMap = dynamic(() => import("@/features/properties/PublicPr
 // click en "Ver en mapa" vuela al pin y abre la vista previa; click en la
 // vista previa lleva a la ficha. Ocupa el alto que le da el contenedor.
 export function PublicMapView({ properties }: { properties: MapProperty[] }) {
+  const t = useTranslations("listing.map");
+  const tCard = useTranslations("listing.card");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [focus, setFocus] = useState<LocatedProperty | null>(null);
@@ -63,7 +71,7 @@ export function PublicMapView({ properties }: { properties: MapProperty[] }) {
       <aside className="order-2 flex min-h-0 flex-col lg:order-1">
         {unlocated.length > 0 && (
           <p className="pb-3 text-xs text-muted-foreground">
-            {unlocated.length} {unlocated.length === 1 ? "propiedad no tiene" : "propiedades no tienen"} ubicación en el mapa
+            {t("unlocated", { count: unlocated.length })}
           </p>
         )}
 
@@ -77,8 +85,8 @@ export function PublicMapView({ properties }: { properties: MapProperty[] }) {
             const highlighted = highlightedId === p.id;
             const cover = cardImages(p.property_images)[0];
             const property = p as unknown as PropertyCardData;
-            const { operation, price } = operationAndPrice(property);
-            const specs = propertySpecs(property);
+            const { operation, price } = operationAndPrice(property, tCard);
+            const specs = propertySpecs(property, tCard);
             return (
               <li
                 key={p.id}
@@ -139,12 +147,12 @@ export function PublicMapView({ properties }: { properties: MapProperty[] }) {
                         className="inline-flex cursor-pointer items-center gap-1 rounded-full text-xs font-medium text-fg-secondary underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-                        Ver en el mapa
+                        {t("viewOnMap")}
                       </button>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-xs text-fg-secondary">
                         <MapPinOff className="h-3.5 w-3.5" aria-hidden="true" />
-                        Sin ubicación en el mapa
+                        {t("noLocation")}
                       </span>
                     )}
                   </div>
@@ -159,7 +167,7 @@ export function PublicMapView({ properties }: { properties: MapProperty[] }) {
         {located.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 bg-muted p-6 text-center text-muted-foreground">
             <MapPinOff className="h-8 w-8 opacity-60" aria-hidden="true" />
-            <p>Ninguna de estas propiedades tiene ubicación cargada en el mapa.</p>
+            <p>{t("noneLocated")}</p>
           </div>
         ) : (
           <PublicPropertiesMap

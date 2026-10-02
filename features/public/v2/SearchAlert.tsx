@@ -1,13 +1,14 @@
 "use client";
 
 import { useActionState, useId, useState } from "react";
+import { useTranslations } from "next-intl";
 import { BellRing, Check, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { createSearchAlertAction } from "@/features/actions/createSearchAlertAction";
 import { LocationCombobox, type LocationSuggestion } from "@/features/properties/LocationCombobox";
 import { ChoiceGroup, SegmentedControl } from "@/features/public/v2/ChoiceGroup";
 import { Field, inputClass, invalidProps } from "@/features/public/v2/formParts";
 import { BEDROOM_OPTIONS } from "@/features/public/v2/HeroSearch";
-import { criteriaChips, withoutChip, type CriteriaKey, type SearchCriteria } from "@/features/public/searchCriteria";
+import { criteriaChips, withoutChip, type CriteriaChip, type CriteriaKey, type SearchCriteria } from "@/features/public/searchCriteria";
 import {
   Dialog,
   DialogContent,
@@ -27,19 +28,15 @@ export type AlertOptions = {
   locations: LocationSuggestion[];
 };
 
-const OPERATIONS = [
-  { value: "", label: "Cualquiera" },
-  { value: "venta", label: "Comprar" },
-  { value: "alquiler", label: "Alquilar" },
-];
+type FormT = ReturnType<typeof useTranslations<"searchAlert.form">>;
 
-function validate(data: FormData): Errors {
+function validate(data: FormData, t: FormT): Errors {
   const v = (k: string) => String(data.get(k) ?? "").trim();
   const errors: Errors = {};
-  if (v("name").length < 3) errors.name = "Escribí tu nombre.";
-  if (v("phone").replace(/\D/g, "").length < 8) errors.phone = "Escribí un teléfono con código de área.";
+  if (v("name").length < 3) errors.name = t("errors.name");
+  if (v("phone").replace(/\D/g, "").length < 8) errors.phone = t("errors.phone");
   const email = v("email");
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Revisá el email.";
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = t("errors.email");
   return errors;
 }
 
@@ -55,9 +52,25 @@ function CriteriaEditor({
   onChange: (next: SearchCriteria) => void;
   options: AlertOptions;
 }) {
+  const t = useTranslations("searchAlert.editor");
+  const tChips = useTranslations("searchAlert.chips");
   const [editing, setEditing] = useState(false);
   const uid = useId();
   const chips = criteriaChips(criteria, options.types, options.amenities);
+  const operations = [
+    { value: "", label: t("operations.any") },
+    { value: "venta", label: t("operations.buy") },
+    { value: "alquiler", label: t("operations.rent") },
+  ];
+  // Los chips traen el texto en español (lo usa la nota del lead); acá se
+  // arma el que ve el visitante. Tipo, zonas, amenities y búsqueda libre
+  // son contenido de la base o del usuario y quedan tal cual.
+  const chipLabel = (chip: CriteriaChip) => {
+    if (chip.key === "tipo") return criteria.tipo === "venta" ? tChips("forSale") : tChips("forRent");
+    if (chip.key === "bedrooms") return tChips("bedrooms", { count: criteria.bedrooms ?? "" });
+    if (chip.key === "bathrooms") return tChips("bathrooms", { count: criteria.bathrooms ?? "" });
+    return chip.label;
+  };
   const set = (key: CriteriaKey, value: string) => {
     const next = { ...criteria };
     if (value) next[key] = value;
@@ -68,7 +81,7 @@ function CriteriaEditor({
   return (
     <div className="rounded-2xl bg-muted p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-foreground">Tu búsqueda</p>
+        <p className="text-sm font-medium text-foreground">{t("title")}</p>
         <button
           type="button"
           onClick={() => setEditing((v) => !v)}
@@ -77,11 +90,11 @@ function CriteriaEditor({
           className="inline-flex cursor-pointer items-center gap-1.5 rounded-sm text-sm font-medium text-foreground underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           {editing ? (
-            "Listo"
+            t("done")
           ) : (
             <>
               <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-              {chips.length ? "Editar filtros" : "Agregar filtros"}
+              {chips.length ? t("edit") : t("add")}
             </>
           )}
         </button>
@@ -94,11 +107,11 @@ function CriteriaEditor({
               key={`${chip.key}-${chip.item ?? ""}`}
               className="inline-flex items-center gap-1 rounded-full bg-card py-1 pr-1 pl-3 text-sm font-medium text-foreground"
             >
-              {chip.label}
+              {chipLabel(chip)}
               <button
                 type="button"
                 onClick={() => onChange(withoutChip(criteria, chip))}
-                aria-label={`Quitar ${chip.label}`}
+                aria-label={t("remove", { label: chipLabel(chip) })}
                 className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full text-fg-secondary hover:bg-main hover:text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring"
               >
                 <X className="h-3 w-3" aria-hidden="true" />
@@ -108,21 +121,21 @@ function CriteriaEditor({
         </ul>
       ) : (
         <p className="mt-1 text-sm text-fg-secondary">
-          Cualquier propiedad nueva. Sumá filtros para recibir solo lo que te interesa.
+          {t("empty")}
         </p>
       )}
 
       {editing && (
         <div id={`${uid}-filters`} className="mt-4 flex flex-col gap-5 border-t border-border pt-4">
           <SegmentedControl
-            label="Operación"
-            options={OPERATIONS}
+            label={t("operationLabel")}
+            options={operations}
             value={criteria.tipo ?? ""}
             onChange={(v) => set("tipo", v)}
           />
 
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-foreground">Zona o dirección</span>
+            <span className="text-sm font-medium text-foreground">{t("zone")}</span>
             <div className="relative flex min-h-11 w-full items-center rounded-[22px] border border-border bg-card px-4 py-1 transition-colors focus-within:border-border-strong focus-within:ring-3 focus-within:ring-ring/15">
               <LocationCombobox
                 locations={options.locations}
@@ -143,8 +156,8 @@ function CriteriaEditor({
 
           {options.types.length > 0 && (
             <ChoiceGroup
-              label="Tipo de propiedad"
-              options={[{ label: "Todos", value: "" }, ...options.types.map((t) => ({ label: t.name, value: String(t.id) }))]}
+              label={t("propertyType")}
+              options={[{ label: t("allTypes"), value: "" }, ...options.types.map((t) => ({ label: t.name, value: String(t.id) }))]}
               value={criteria.typeId ?? ""}
               onChange={(v) => set("typeId", v)}
               layoutId={`${uid}-type`}
@@ -152,8 +165,8 @@ function CriteriaEditor({
           )}
 
           <ChoiceGroup
-            label="Dormitorios"
-            options={BEDROOM_OPTIONS}
+            label={t("bedrooms")}
+            options={BEDROOM_OPTIONS.map((o) => (o.value === "" ? { ...o, label: t("allTypes") } : o))}
             value={criteria.bedrooms ?? ""}
             onChange={(v) => set("bedrooms", v)}
             layoutId={`${uid}-bedrooms`}
@@ -165,6 +178,7 @@ function CriteriaEditor({
 }
 
 function AlertForm({ initialCriteria, options }: { initialCriteria: SearchCriteria; options: AlertOptions }) {
+  const t = useTranslations("searchAlert.form");
   const [state, formAction, pending] = useActionState(createSearchAlertAction, initialState);
   const [errors, setErrors] = useState<Errors>({});
   const [criteria, setCriteria] = useState(initialCriteria);
@@ -174,9 +188,9 @@ function AlertForm({ initialCriteria, options }: { initialCriteria: SearchCriter
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-pop text-foreground">
           <Check className="h-6 w-6" aria-hidden="true" />
         </span>
-        <p className="font-display text-3xl leading-[1] font-medium tracking-[-0.035em] text-foreground">Alerta creada</p>
+        <p className="font-display text-3xl leading-[1] font-medium tracking-[-0.035em] text-foreground">{t("successTitle")}</p>
         <p className="max-w-[40ch] text-base leading-relaxed text-fg-secondary">
-          Un asesor te va a escribir apenas entre una propiedad que encaje con tu búsqueda.
+          {t("successBody")}
         </p>
       </div>
     );
@@ -189,7 +203,7 @@ function AlertForm({ initialCriteria, options }: { initialCriteria: SearchCriter
       noValidate
       action={formAction}
       onSubmit={(e) => {
-        const found = validate(new FormData(e.currentTarget));
+        const found = validate(new FormData(e.currentTarget), t);
         setErrors(found);
         if (Object.keys(found).length > 0) {
           e.preventDefault();
@@ -214,14 +228,14 @@ function AlertForm({ initialCriteria, options }: { initialCriteria: SearchCriter
 
       <CriteriaEditor criteria={criteria} onChange={setCriteria} options={options} />
 
-      <Field id="alert-name" label="Nombre y apellido" error={errors.name}>
+      <Field id="alert-name" label={t("name")} error={errors.name}>
         <input id="alert-name" name="name" autoComplete="name" className={inputClass} {...described("name")} />
       </Field>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <Field id="alert-phone" label="Teléfono" error={errors.phone}>
+        <Field id="alert-phone" label={t("phone")} error={errors.phone}>
           <input id="alert-phone" name="phone" type="tel" autoComplete="tel" inputMode="tel" className={inputClass} {...described("phone")} />
         </Field>
-        <Field id="alert-email" label="Email" hint="(opcional)" error={errors.email}>
+        <Field id="alert-email" label={t("email")} hint={t("optional")} error={errors.email}>
           <input id="alert-email" name="email" type="email" autoComplete="email" className={inputClass} {...described("email")} />
         </Field>
       </div>
@@ -240,12 +254,12 @@ function AlertForm({ initialCriteria, options }: { initialCriteria: SearchCriter
         {pending ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-            Creando alerta…
+            {t("creating")}
           </>
         ) : (
           <>
             <BellRing className="h-4 w-4" aria-hidden="true" />
-            Crear alerta
+            {t("create")}
           </>
         )}
       </button>
@@ -267,6 +281,7 @@ export function SearchAlertDialog({
   options: AlertOptions;
   children: React.ReactNode;
 }) {
+  const t = useTranslations("searchAlert.dialog");
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState(0);
 
@@ -281,10 +296,10 @@ export function SearchAlertDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto rounded-3xl border-0 bg-card p-6 sm:max-w-lg md:p-8">
         <DialogTitle className="pr-8 font-display text-3xl leading-[1] font-medium tracking-[-0.035em] text-foreground">
-          Te avisamos cuando entre
+          {t("title")}
         </DialogTitle>
         <DialogDescription className="mt-3 mb-6 text-base leading-relaxed text-fg-secondary">
-          Muchas propiedades se venden antes de publicarse. Dejanos tu contacto y un asesor te escribe primero.
+          {t("description")}
         </DialogDescription>
         <AlertForm key={session} initialCriteria={criteria} options={options} />
       </DialogContent>

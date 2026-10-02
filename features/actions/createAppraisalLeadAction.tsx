@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { getTranslations } from "next-intl/server";
 import { supabaseAdmin, nextAgentForLead } from "@/lib/supabase-admin";
 
 // Server Action pública (visitante anónimo, sin sesión) -- usa
@@ -29,6 +30,8 @@ export async function createAppraisalLeadAction(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
+  const t = await getTranslations("appraisal.actions");
+
   // 1. Obtener datos del formulario
   const rawData = {
     name: formData.get("name"),
@@ -45,7 +48,7 @@ export async function createAppraisalLeadAction(
   if (!validation.success) {
     return {
       success: false,
-      message: "Error en los datos. Revisa el formulario.",
+      message: t("invalid"),
     };
   }
 
@@ -60,7 +63,7 @@ export async function createAppraisalLeadAction(
     console.error("Tasación: no se pudo asignar un agente.");
     return {
       success: false,
-      message: "No pudimos enviar tu solicitud. Probá de nuevo en unos minutos o escribinos por WhatsApp.",
+      message: t("failed"),
     };
   }
 
@@ -85,12 +88,12 @@ export async function createAppraisalLeadAction(
     console.error("Error al guardar la solicitud de tasación:", insertError.message);
     return {
       success: false,
-      message: "No pudimos enviar tu solicitud. Probá de nuevo en unos minutos o escribinos por WhatsApp.",
+      message: t("failed"),
     };
   }
 
   return {
     success: true,
-    message: "¡Solicitud enviada! Te contactaremos a la brevedad.",
+    message: t("success"),
   };
 }

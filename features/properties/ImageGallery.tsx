@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -36,6 +37,7 @@ export function Lightbox({
   onIndexChange: (index: number) => void;
   onClose: () => void;
 }) {
+  const t = useTranslations("property.gallery");
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState<Point>({ x: 0, y: 0 });
   const [isGesturing, setIsGesturing] = useState(false);
@@ -236,7 +238,7 @@ export function Lightbox({
     <motion.div
       role="dialog"
       aria-modal="true"
-      aria-label={`Galería de fotos de ${title}`}
+      aria-label={t("dialog", { title })}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -254,7 +256,7 @@ export function Lightbox({
             className={iconButton}
             onClick={() => zoomTo(scale - 0.75)}
             disabled={!isZoomed}
-            aria-label="Alejar"
+            aria-label={t("zoomOut")}
           >
             <ZoomOut className="h-5 w-5" />
           </button>
@@ -263,7 +265,7 @@ export function Lightbox({
             onClick={resetZoom}
             disabled={!isZoomed}
             className="min-w-14 rounded-full px-2 py-1 text-xs font-medium tabular-nums text-white/70 transition hover:text-white disabled:opacity-40"
-            aria-label="Restablecer zoom"
+            aria-label={t("resetZoom")}
           >
             {Math.round(scale * 100)}%
           </button>
@@ -272,12 +274,12 @@ export function Lightbox({
             className={iconButton}
             onClick={() => zoomTo(scale + 0.75)}
             disabled={scale >= MAX_SCALE}
-            aria-label="Acercar"
+            aria-label={t("zoomIn")}
           >
             <ZoomIn className="h-5 w-5" />
           </button>
           <span className="mx-1 h-6 w-px bg-white/15" />
-          <button type="button" className={iconButton} onClick={onClose} aria-label="Cerrar galería">
+          <button type="button" className={iconButton} onClick={onClose} aria-label={t("close")}>
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -313,7 +315,7 @@ export function Lightbox({
               >
                 <Image
                   src={images[index]}
-                  alt={`Foto ${index + 1} de ${title}`}
+                  alt={t("photo", { index: index + 1, title })}
                   fill
                   sizes="100vw"
                   quality={90}
@@ -331,7 +333,7 @@ export function Lightbox({
             <button
               type="button"
               onClick={() => goTo(index - 1)}
-              aria-label="Foto anterior"
+              aria-label={t("previous")}
               className={`${iconButton} absolute left-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 md:flex`}
             >
               <ChevronLeft className="h-7 w-7" />
@@ -339,7 +341,7 @@ export function Lightbox({
             <button
               type="button"
               onClick={() => goTo(index + 1)}
-              aria-label="Foto siguiente"
+              aria-label={t("next")}
               className={`${iconButton} absolute right-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 md:flex`}
             >
               <ChevronRight className="h-7 w-7" />
@@ -369,8 +371,8 @@ export function Lightbox({
       <div className="relative z-20 px-4 pt-2 pb-4 md:px-6">
         <p className="mb-3 text-center text-xs text-white/40">
           {isZoomed
-            ? "Arrastrá para mover · doble toque para salir del zoom"
-            : "Doble toque, rueda o pellizco para hacer zoom"}
+            ? t("hintZoomed")
+            : t("hint")}
         </p>
         {count > 1 && (
           <div
@@ -383,7 +385,7 @@ export function Lightbox({
                 type="button"
                 data-index={idx}
                 onClick={() => goTo(idx)}
-                aria-label={`Ver foto ${idx + 1}`}
+                aria-label={t("viewPhoto", { index: idx + 1 })}
                 aria-current={idx === index}
                 className={`relative h-14 w-20 shrink-0 overflow-hidden rounded-md transition md:h-16 md:w-24 ${
                   idx === index

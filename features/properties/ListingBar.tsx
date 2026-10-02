@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { Check, ChevronDown, LayoutGrid, Map as MapIcon, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/popover";
@@ -9,15 +10,15 @@ import { useFilterParams } from "@/features/properties/useFilterParams";
 import { FiltersSheet, type FilterOptions } from "@/features/properties/ListingFilters";
 
 const SORTS = [
-  { value: "", label: "Más recientes" },
-  { value: "price_asc", label: "Menor precio" },
-  { value: "price_desc", label: "Mayor precio" },
-];
+  { value: "", key: "sortRecent" },
+  { value: "price_asc", key: "sortPriceAsc" },
+  { value: "price_desc", key: "sortPriceDesc" },
+] as const;
 
 const VIEWS = [
-  { value: "", label: "Lista", icon: LayoutGrid },
-  { value: "mapa", label: "Mapa", icon: MapIcon },
-];
+  { value: "", key: "viewList", ariaKey: "viewListAria", icon: LayoutGrid },
+  { value: "mapa", key: "viewMap", ariaKey: "viewMapAria", icon: MapIcon },
+] as const;
 
 // Barra arriba de los resultados: cantidad y filtros activos (chips para
 // quitarlos de a uno) a la izquierda; orden y Lista/Mapa a la derecha. En
@@ -28,6 +29,7 @@ export function ListingBar({
   view,
   ...options
 }: FilterOptions & { count: number; query?: string; view: "lista" | "mapa" }) {
+  const t = useTranslations("listing.bar");
   const router = useRouter();
   const pathname = usePathname();
   const reduce = useReducedMotion();
@@ -42,7 +44,7 @@ export function ListingBar({
   };
 
   const sort = searchParams.get("sortBy") ?? "";
-  const sortLabel = SORTS.find((s) => s.value === sort)?.label ?? SORTS[0].label;
+  const sortLabel = t((SORTS.find((s) => s.value === sort) ?? SORTS[0]).key);
   const viewValue = view === "mapa" ? "mapa" : "";
 
   const single = (name: string) => {
@@ -55,8 +57,8 @@ export function ListingBar({
   const chips = [
     ...single("typeId").map((v) => ({ name: "typeId", value: v, label: options.types.find((t) => String(t.id) === v)?.name ?? v })),
     ...multi("loc").map((v) => ({ name: "loc", value: v, label: v })),
-    ...single("bedrooms").map((v) => ({ name: "bedrooms", value: v, label: `${v}+ dormitorios` })),
-    ...single("bathrooms").map((v) => ({ name: "bathrooms", value: v, label: `${v}+ baños` })),
+    ...single("bedrooms").map((v) => ({ name: "bedrooms", value: v, label: t("bedroomsChip", { count: v }) })),
+    ...single("bathrooms").map((v) => ({ name: "bathrooms", value: v, label: t("bathroomsChip", { count: v }) })),
     ...multi("amenities").map((v) => ({ name: "amenities", value: v, label: options.amenities.find((a) => String(a.id) === v)?.name ?? v })),
   ];
 
@@ -64,8 +66,11 @@ export function ListingBar({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-fg-secondary tabular-nums" aria-live="polite">
-          <span className="font-semibold text-foreground">{count}</span> {count === 1 ? "propiedad" : "propiedades"}
-          {query ? ` para “${query}”` : ""}
+          {t.rich(query ? "countWithQuery" : "count", {
+            count,
+            query: query ?? "",
+            b: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
+          })}
         </p>
 
         <div className="flex items-center gap-2">
@@ -75,10 +80,10 @@ export function ListingBar({
             <PopoverTrigger asChild>
               <button
                 type="button"
-                aria-label={`Ordenar: ${sortLabel}`}
+                aria-label={t("sortAria", { sort: sortLabel })}
                 className="inline-flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-border-strong bg-card px-4 text-sm font-medium whitespace-nowrap text-foreground transition-colors hover:border-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
-                <span className="hidden text-fg-secondary sm:inline">Ordenar:</span> {sortLabel}
+                <span className="hidden text-fg-secondary sm:inline">{t("sortPrefix")}</span> {sortLabel}
                 <ChevronDown className="h-4 w-4 opacity-60" aria-hidden="true" />
               </button>
             </PopoverTrigger>
@@ -95,7 +100,7 @@ export function ListingBar({
                         sort === s.value && "font-semibold",
                       )}
                     >
-                      {s.label}
+                      {t(s.key)}
                       {sort === s.value && <Check className="h-4 w-4" aria-hidden="true" />}
                     </button>
                   </li>
@@ -104,7 +109,7 @@ export function ListingBar({
             </PopoverContent>
           </Popover>
 
-          <div role="radiogroup" aria-label="Vista" className="inline-flex h-10 shrink-0 items-center rounded-full bg-muted p-1">
+          <div role="radiogroup" aria-label={t("viewGroup")} className="inline-flex h-10 shrink-0 items-center rounded-full bg-muted p-1">
             {VIEWS.map((o) => {
               const active = viewValue === o.value;
               return (
@@ -113,8 +118,8 @@ export function ListingBar({
                   type="button"
                   role="radio"
                   aria-checked={active}
-                  aria-label={`Vista ${o.label.toLowerCase()}`}
-                  title={o.label}
+                  aria-label={t(o.ariaKey)}
+                  title={t(o.key)}
                   onClick={() => !active && setParam("vista", o.value)}
                   className={cn(
                     "relative flex h-full w-10 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -137,13 +142,13 @@ export function ListingBar({
       </div>
 
       {chips.length > 0 && (
-        <ul className="flex flex-wrap items-center gap-2" aria-label="Filtros activos">
+        <ul className="flex flex-wrap items-center gap-2" aria-label={t("activeFilters")}>
           {chips.map((c) => (
             <li key={`${c.name}-${c.value}`}>
               <button
                 type="button"
                 onClick={() => toggle(c.name, c.value)}
-                aria-label={`Quitar filtro ${c.label}`}
+                aria-label={t("removeFilter", { label: c.label })}
                 className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-main-soft pr-2 pl-3 text-[13px] font-medium text-foreground transition-colors hover:bg-main-soft/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {c.label}

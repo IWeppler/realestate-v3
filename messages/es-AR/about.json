@@ -1,0 +1,40 @@
+{
+  "metaTitle": "Nosotros",
+  "metaDescription": "Conocé al equipo de {brand}: los asesores que te acompañan a comprar, vender o alquilar.",
+  "roles": {
+    "admin": "Dirección",
+    "agent": "Asesor inmobiliario"
+  },
+  "hero": {
+    "title": "Un equipo que te responde.",
+    "subtitle": "En {brand} te acompañamos a comprar, vender o alquilar, con un asesor que conoce la zona."
+  },
+  "stats": {
+    "aria": "La inmobiliaria en números",
+    "available": "{count, plural, one {propiedad disponible} other {propiedades disponibles}}",
+    "zones": "{count, plural, one {zona con propiedades} other {zonas con propiedades}}",
+    "advisors": "{count, plural, one {asesor a tu disposición} other {asesores a tu disposición}}"
+  },
+  "values": {
+    "title": "Cómo trabajamos",
+    "respond": {
+      "title": "Te respondemos",
+      "body": "Cada consulta tiene un asesor asignado desde el primer mensaje. Nadie queda esperando."
+    },
+    "data": {
+      "title": "Tasamos con datos",
+      "body": "Comparamos con lo que se publica y se vende en la zona, no con lo que nos gustaría."
+    },
+    "support": {
+      "title": "Te acompañamos hasta el final",
+      "body": "Visitas, reserva, documentación y escritura: un mismo equipo en todo el proceso."
+    }
+  },
+  "team": {
+    "title": "El equipo",
+    "photoAlt": "Foto de {name}",
+    "listings": "{role}, {count, plural, one {# propiedad a cargo} other {# propiedades a cargo}}",
+    "callAria": "Llamar a {name}",
+    "viewListings": "Ver las propiedades del equipo"
+  }
+}

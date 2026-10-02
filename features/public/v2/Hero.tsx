@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { HeroSearch, type PropertyTypeOption } from "@/features/public/v2/HeroSearch";
 import { SplitHeading } from "@/features/public/v2/motion";
 import { getUniqueLocations } from "@/shared/utils/getLocations";
@@ -10,16 +11,18 @@ import { getUniqueLocations } from "@/shared/utils/getLocations";
 // todo se apila sobre la foto: titular arriba, buscador abajo. Copy sin
 // ubicación: el sitio es white-label.
 export async function Hero({ types }: { types: PropertyTypeOption[] }) {
+  const t = await getTranslations("home.hero");
   const locations = await getUniqueLocations();
 
   return (
     <section className="w-full bg-background p-3 md:p-5 lg:px-10">
       <div className="relative isolate flex min-h-[calc(100dvh-5.5rem)] w-full overflow-hidden rounded-4xl bg-foreground md:min-h-[calc(100dvh-6.5rem)]">
         <Image
-          src="/bghero3.jpg"
+          src="/hero-brasil-v1.webp"
           alt=""
           fill
           priority
+          quality={90}
           sizes="(min-width: 1024px) calc(100vw - 5rem), (min-width: 768px) calc(100vw - 2.5rem), calc(100vw - 1.5rem)"
           className="site-settle -z-20 object-cover"
         />
@@ -35,11 +38,11 @@ export async function Hero({ types }: { types: PropertyTypeOption[] }) {
               as="h1"
               trigger="mount"
               delay={0.1}
-              text={"Encontrá dónde\nvas a vivir."}
+              text={t("title")}
               className="font-display text-[clamp(2.75rem,6vw,5.5rem)] leading-[0.95] font-medium tracking-[-0.035em] text-background"
             />
             <p className="site-rise mt-5 max-w-[40ch] text-lg leading-relaxed text-background/85 [--rise-delay:450ms] md:text-xl">
-              Casas, departamentos y terrenos en venta y alquiler, con asesoramiento de principio a fin.
+              {t("subtitle")}
             </p>
           </div>
 

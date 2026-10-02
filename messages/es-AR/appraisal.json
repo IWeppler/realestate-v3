@@ -1,0 +1,88 @@
+{
+  "page": {
+    "metaTitle": "Tasar mi propiedad",
+    "metaDescription": "Pedí una tasación sin costo: visitamos tu propiedad y te enviamos un valor de mercado con comparables de la zona.",
+    "heroTitle": "¿Cuánto vale hoy\ntu propiedad?",
+    "heroIntro": "Tasación sin costo, con visita y un informe con comparables de la zona.",
+    "formTitle": "Pedí tu tasación",
+    "formIntro": "Te llamamos para coordinar la visita.",
+    "stepsTitle": "Cómo funciona",
+    "factorsTitle": "Qué miramos para tasar",
+    "faqTitle": "Preguntas frecuentes",
+    "factors": {
+      "location": { "title": "Ubicación y entorno", "body": "Barrio, accesos, servicios y cómo se mueve la demanda en la zona." },
+      "condition": { "title": "Estado y antigüedad", "body": "Terminaciones, mantenimiento y lo que haría falta arreglar." },
+      "surface": { "title": "Superficie", "body": "Metros cubiertos, semicubiertos y del terreno." },
+      "comparables": { "title": "Comparables", "body": "Propiedades parecidas publicadas y vendidas cerca." }
+    },
+    "faq": {
+      "cost": {
+        "q": "¿La tasación tiene costo?",
+        "a": "No. La visita y el informe con el valor de mercado no tienen costo."
+      },
+      "method": {
+        "q": "¿Cómo calculan el valor?",
+        "a": "Visitamos la propiedad para ver estado, superficie y entorno, y la comparamos con propiedades similares publicadas y vendidas en la zona."
+      },
+      "documents": {
+        "q": "¿Qué necesito tener a mano?",
+        "a": "La dirección alcanza para empezar. Si tenés planos, escritura o el último impuesto, nos ayudan a afinar el valor; si no, lo vemos en la visita."
+      },
+      "commitment": {
+        "q": "¿Pedir la tasación me compromete a publicar con ustedes?",
+        "a": "No. Con el informe en la mano decidís vos si avanzar, cuándo y cómo."
+      },
+      "types": {
+        "q": "¿Qué tipo de propiedades tasan?",
+        "a": "Casas, departamentos, PH, locales, lotes y campos, tanto para venta como para alquiler."
+      }
+    }
+  },
+  "form": {
+    "stepsLabel": "Pasos",
+    "stepProperty": "Tu propiedad",
+    "stepContact": "Tus datos",
+    "operationQuestion": "¿Qué querés hacer?",
+    "operationLabel": "Operación",
+    "operations": {
+      "sell": "Vender",
+      "rent": "Alquilar"
+    },
+    "propertyType": "Tipo de propiedad",
+    "propertyTypePlaceholder": "Elegí una opción",
+    "address": "Dirección",
+    "addressPlaceholder": "Calle, número y ciudad",
+    "continue": "Continuar",
+    "name": "Nombre y apellido",
+    "phone": "Teléfono",
+    "email": "Email",
+    "optional": "(opcional)",
+    "notes": "Algo que quieras contarnos",
+    "notesPlaceholder": "Ej.: superficie, estado, si está ocupada…",
+    "back": "Volver a los datos de la propiedad",
+    "submit": "Solicitar tasación",
+    "sending": "Enviando…",
+    "errors": {
+      "operationType": "Elegí si querés vender o alquilar.",
+      "propertyType": "Elegí el tipo de propiedad.",
+      "address": "Escribí la dirección (calle, número y ciudad).",
+      "name": "Escribí tu nombre.",
+      "phone": "Escribí un teléfono con código de área.",
+      "email": "Revisá el email."
+    },
+    "successTitle": "Recibimos tu solicitud",
+    "successBody": "Un agente te va a llamar para coordinar la visita. Si preferís, escribinos directo.",
+    "successWhatsappMessage": "Hola, acabo de pedir una tasación desde la web."
+  },
+  "band": {
+    "imageAlt": "Casa blanca de dos plantas con jardín",
+    "title": "¿Querés vender o alquilar tu propiedad?",
+    "body": "Te decimos cuánto vale hoy, sin costo, y la publicamos donde se mueve la demanda.",
+    "cta": "Tasar mi propiedad"
+  },
+  "actions": {
+    "invalid": "Error en los datos. Revisa el formulario.",
+    "failed": "No pudimos enviar tu solicitud. Probá de nuevo en unos minutos o escribinos por WhatsApp.",
+    "success": "¡Solicitud enviada! Te contactaremos a la brevedad."
+  }
+}

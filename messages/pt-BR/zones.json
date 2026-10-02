@@ -1,0 +1,26 @@
+{
+  "index": {
+    "metaTitle": "Regiões",
+    "metaDescription": "Imóveis para venda e aluguel por região: escolha a cidade e veja o que está disponível.",
+    "title": "Explore por região",
+    "intro": "Escolha a cidade e veja tudo o que temos disponível lá, para venda e aluguel.",
+    "empty": "Ainda não há imóveis publicados.",
+    "available": "{count, plural, one {# disponível} other {# disponíveis}}",
+    "from": "a partir de {price}"
+  },
+  "detail": {
+    "notFoundTitle": "Região não encontrada",
+    "metaTitle": "Imóveis em {city}",
+    "metaDescription": "Casas, apartamentos e terrenos para venda e aluguel em {location}. {count} imóveis disponíveis.",
+    "title": "Imóveis em {city}",
+    "allZones": "Todas as regiões",
+    "statsAria": "{city} em números",
+    "forSale": "{count, plural, one {imóvel à venda} other {imóveis à venda}}",
+    "forRent": "{count, plural, one {imóvel para alugar} other {imóveis para alugar}}",
+    "lowestPrice": "menor preço de venda",
+    "alert": "Avise-me quando entrar",
+    "viewOnMap": "Ver no mapa",
+    "listingsAria": "Imóveis disponíveis em {city}",
+    "otherZones": "Outras regiões"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "contactCta": "Escribinos",
+  "nav": {
+    "properties": "Propiedades",
+    "zones": "Zonas",
+    "appraise": "Tasar mi propiedad",
+    "about": "Nosotros",
+    "contact": "Contacto"
+  },
+  "header": {
+    "skipToContent": "Saltar al contenido",
+    "mainNav": "Principal",
+    "mobileNav": "Menú móvil",
+    "menu": "Menú",
+    "close": "Cerrar",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "email": "Email",
+    "phone": "Teléfono",
+    "whatsappMessage": "Hola, quería hacer una consulta."
+  },
+  "language": {
+    "short": "PT",
+    "label": "Ver el sitio en portugués"
+  },
+  "footer": {
+    "propertiesTitle": "Propiedades",
+    "agencyTitle": "Inmobiliaria",
+    "contactTitle": "Contacto",
+    "buy": "Comprar",
+    "rent": "Alquilar",
+    "map": "Mapa",
+    "zones": "Zonas",
+    "appraise": "Tasar mi propiedad",
+    "about": "Nosotros",
+    "contact": "Contacto",
+    "login": "Ingresar",
+    "instagram": "Instagram @{handle}",
+    "homeAria": "{brand}, inicio",
+    "rights": "© {year} {brand}. Todos los derechos reservados.",
+    "credits": "Diseño y desarrollo por <link>Ignacio Weppler</link>"
+  },
+  "error": {
+    "title": "Algo no cargó bien",
+    "body": "Tuvimos un problema para mostrar esta página. Probá de nuevo en unos segundos.",
+    "retry": "Reintentar",
+    "home": "Ir al inicio"
+  },
+  "notFound": {
+    "metaTitle": "Página no encontrada",
+    "title": "No encontramos esta página",
+    "body": "Puede que la propiedad ya no esté publicada o que el enlace tenga un error. Mirá las que están disponibles.",
+    "viewProperties": "Ver propiedades",
+    "home": "Ir al inicio"
+  },
+  "appraisalSteps": {
+    "tell": {
+      "title": "Nos contás",
+      "body": "Completás un formulario corto con los datos de tu propiedad."
+    },
+    "visit": {
+      "title": "La visitamos",
+      "body": "Coordinamos una visita para ver estado, superficie y entorno."
+    },
+    "report": {
+      "title": "Recibís el informe",
+      "body": "Te enviamos un valor de mercado con comparables de la zona."
+    }
+  },
+  "map": {
+    "title": "Mapa",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "resetNorth": "Orientar al norte",
+    "fullscreen": "Alternar pantalla completa",
+    "closePopup": "Cerrar ficha",
+    "toggleAttribution": "Mostrar u ocultar atribución del mapa"
+  }
+}

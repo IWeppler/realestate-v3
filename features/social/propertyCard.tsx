@@ -194,20 +194,22 @@ export function PropertySocialCard({
   width,
   height,
   options = DEFAULT_OPTIONS,
+  text,
 }: {
   p: SocialProperty;
   width: number;
   height: number;
   options?: CardOptions;
+  text?: { badge: string; price: string; specs: string[] };
 }) {
   const o = options;
   const scale = width / 1080;
   const px = (n: number) => Math.round(n * scale);
   const location = (o.copy.location ?? [p.street_address, formatLocation(p)].filter(Boolean).join(", ")).trim().slice(0, 140);
-  const chips = o.show.specs ? specChips(p) : [];
+  const chips = o.show.specs ? (text?.specs ?? specChips(p)) : [];
   const image = p.images[o.photo] ?? p.images[0] ?? p.image;
-  const badgeText = o.noBadge ? null : o.badge.trim() || (o.copy.operation === "alquiler" ? "En alquiler" : o.copy.operation === "venta" ? "En venta" : operationLabel(p));
-  const priceText = formatPrice(p.price, p.currency);
+  const badgeText = o.noBadge ? null : text?.badge ?? (o.badge.trim() || (o.copy.operation === "alquiler" ? "En alquiler" : o.copy.operation === "venta" ? "En venta" : operationLabel(p)));
+  const priceText = text?.price ?? formatPrice(p.price, p.currency);
   const rawTitle = (o.copy.title ?? p.title).trim();
   const titleLimit = o.layout === "editorial" ? 56 : 72;
   const titleText = rawTitle.length > titleLimit ? rawTitle.slice(0, titleLimit - 3) + "…" : rawTitle;

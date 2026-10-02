@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { getTranslations } from "next-intl/server";
 import { supabaseAdmin, nextAgentForLead } from "@/lib/supabase-admin";
 
 // Server Action pública (visitante anónimo, sin sesión) -- usa
@@ -26,6 +27,8 @@ export async function createLeadFromPublic(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
+  const t = await getTranslations("contact.actions");
+
   // 1. Obtener datos del formulario
   const rawData = {
     name: formData.get("name"),
@@ -41,7 +44,7 @@ export async function createLeadFromPublic(
   if (!validation.success) {
     return {
       success: false,
-      message: "Error en los datos enviados. Revisa el formulario.",
+      message: t("inquiryInvalid"),
     };
   }
 
@@ -56,7 +59,7 @@ export async function createLeadFromPublic(
     .single();
 
   if (ownerError || !property) {
-    return { success: false, message: "No se pudo encontrar la propiedad." };
+    return { success: false, message: t("inquiryPropertyNotFound") };
   }
 
   // La propiedad puede no tener agente asignado (agent_id nullable) --
@@ -72,7 +75,7 @@ export async function createLeadFromPublic(
     console.error("Consulta de propiedad: no se pudo asignar un agente.");
     return {
       success: false,
-      message: "No pudimos enviar tu consulta. Probá de nuevo en unos minutos o escribinos por WhatsApp.",
+      message: t("inquiryFailed"),
     };
   }
 
@@ -93,13 +96,13 @@ export async function createLeadFromPublic(
     console.error("Error al guardar la consulta de propiedad:", insertError.message);
     return {
       success: false,
-      message: "No pudimos enviar tu consulta. Probá de nuevo en unos minutos o escribinos por WhatsApp.",
+      message: t("inquiryFailed"),
     };
   }
 
   // 5. Éxito
   return {
     success: true,
-    message: "¡Consulta enviada! Te contactaremos a la brevedad.",
+    message: t("inquirySuccess"),
   };
 }

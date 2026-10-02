@@ -1,0 +1,40 @@
+{
+  "metaTitle": "Sobre nós",
+  "metaDescription": "Conheça a equipe da {brand}: os corretores que acompanham você para comprar, vender ou alugar.",
+  "roles": {
+    "admin": "Direção",
+    "agent": "Corretor de imóveis"
+  },
+  "hero": {
+    "title": "Uma equipe que responde você.",
+    "subtitle": "Na {brand} acompanhamos você para comprar, vender ou alugar, com um corretor que conhece a região."
+  },
+  "stats": {
+    "aria": "A imobiliária em números",
+    "available": "{count, plural, one {imóvel disponível} other {imóveis disponíveis}}",
+    "zones": "{count, plural, one {região com imóveis} other {regiões com imóveis}}",
+    "advisors": "{count, plural, one {corretor à sua disposição} other {corretores à sua disposição}}"
+  },
+  "values": {
+    "title": "Como trabalhamos",
+    "respond": {
+      "title": "Respondemos você",
+      "body": "Cada consulta tem um corretor designado desde a primeira mensagem. Ninguém fica esperando."
+    },
+    "data": {
+      "title": "Avaliamos com dados",
+      "body": "Comparamos com o que é anunciado e vendido na região, não com o que gostaríamos que fosse."
+    },
+    "support": {
+      "title": "Acompanhamos você até o fim",
+      "body": "Visitas, reserva, documentação e escritura: a mesma equipe em todo o processo."
+    }
+  },
+  "team": {
+    "title": "A equipe",
+    "photoAlt": "Foto de {name}",
+    "listings": "{role}, {count, plural, one {# imóvel sob sua responsabilidade} other {# imóveis sob sua responsabilidade}}",
+    "callAria": "Ligar para {name}",
+    "viewListings": "Ver os imóveis da equipe"
+  }
+}

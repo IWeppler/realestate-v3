@@ -1,0 +1,79 @@
+{
+  "contactCta": "Fale conosco",
+  "nav": {
+    "properties": "Imóveis",
+    "zones": "Regiões",
+    "appraise": "Avaliar meu imóvel",
+    "about": "Sobre nós",
+    "contact": "Contato"
+  },
+  "header": {
+    "skipToContent": "Pular para o conteúdo",
+    "mainNav": "Principal",
+    "mobileNav": "Menu móvel",
+    "menu": "Menu",
+    "close": "Fechar",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu",
+    "email": "E-mail",
+    "phone": "Telefone",
+    "whatsappMessage": "Olá, gostaria de fazer uma consulta."
+  },
+  "language": {
+    "short": "ES",
+    "label": "Ver o site em espanhol"
+  },
+  "footer": {
+    "propertiesTitle": "Imóveis",
+    "agencyTitle": "Imobiliária",
+    "contactTitle": "Contato",
+    "buy": "Comprar",
+    "rent": "Alugar",
+    "map": "Mapa",
+    "zones": "Regiões",
+    "appraise": "Avaliar meu imóvel",
+    "about": "Sobre nós",
+    "contact": "Contato",
+    "login": "Entrar",
+    "instagram": "Instagram @{handle}",
+    "homeAria": "{brand}, início",
+    "rights": "© {year} {brand}. Todos os direitos reservados.",
+    "credits": "Design e desenvolvimento por <link>Ignacio Weppler</link>"
+  },
+  "error": {
+    "title": "Algo não carregou direito",
+    "body": "Tivemos um problema para exibir esta página. Tente novamente em alguns segundos.",
+    "retry": "Tentar novamente",
+    "home": "Ir para o início"
+  },
+  "notFound": {
+    "metaTitle": "Página não encontrada",
+    "title": "Não encontramos esta página",
+    "body": "Pode ser que o imóvel não esteja mais publicado ou que o link tenha um erro. Veja os que estão disponíveis.",
+    "viewProperties": "Ver imóveis",
+    "home": "Ir para o início"
+  },
+  "appraisalSteps": {
+    "tell": {
+      "title": "Você nos conta",
+      "body": "Você preenche um formulário curto com os dados do seu imóvel."
+    },
+    "visit": {
+      "title": "Nós visitamos",
+      "body": "Combinamos uma visita para ver estado, metragem e entorno."
+    },
+    "report": {
+      "title": "Você recebe o relatório",
+      "body": "Enviamos um valor de mercado com comparáveis da região."
+    }
+  },
+  "map": {
+    "title": "Mapa",
+    "zoomIn": "Aproximar",
+    "zoomOut": "Afastar",
+    "resetNorth": "Orientar para o norte",
+    "fullscreen": "Alternar tela cheia",
+    "closePopup": "Fechar ficha",
+    "toggleAttribution": "Mostrar ou ocultar atribuição do mapa"
+  }
+}

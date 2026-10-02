@@ -1,0 +1,88 @@
+{
+  "page": {
+    "metaTitle": "Avaliar meu imóvel",
+    "metaDescription": "Peça uma avaliação sem custo: visitamos seu imóvel e enviamos um valor de mercado com comparáveis da região.",
+    "heroTitle": "Quanto vale hoje\no seu imóvel?",
+    "heroIntro": "Avaliação sem custo, com visita e um relatório com comparáveis da região.",
+    "formTitle": "Peça sua avaliação",
+    "formIntro": "Ligamos para combinar a visita.",
+    "stepsTitle": "Como funciona",
+    "factorsTitle": "O que analisamos para avaliar",
+    "faqTitle": "Perguntas frequentes",
+    "factors": {
+      "location": { "title": "Localização e entorno", "body": "Bairro, acessos, serviços e como se move a demanda na região." },
+      "condition": { "title": "Estado e idade", "body": "Acabamentos, manutenção e o que precisaria ser consertado." },
+      "surface": { "title": "Metragem", "body": "Metros cobertos, semicobertos e do terreno." },
+      "comparables": { "title": "Comparáveis", "body": "Imóveis parecidos anunciados e vendidos por perto." }
+    },
+    "faq": {
+      "cost": {
+        "q": "A avaliação tem custo?",
+        "a": "Não. A visita e o relatório com o valor de mercado não têm custo."
+      },
+      "method": {
+        "q": "Como vocês calculam o valor?",
+        "a": "Visitamos o imóvel para ver estado, metragem e entorno, e o comparamos com imóveis similares anunciados e vendidos na região."
+      },
+      "documents": {
+        "q": "O que preciso ter em mãos?",
+        "a": "O endereço basta para começar. Se você tiver plantas, escritura ou o último imposto, ajudam a refinar o valor; se não, vemos isso na visita."
+      },
+      "commitment": {
+        "q": "Pedir a avaliação me obriga a anunciar com vocês?",
+        "a": "Não. Com o relatório em mãos, você decide se, quando e como seguir em frente."
+      },
+      "types": {
+        "q": "Que tipos de imóveis vocês avaliam?",
+        "a": "Casas, apartamentos, PH, lojas, lotes e fazendas, tanto para venda quanto para aluguel."
+      }
+    }
+  },
+  "form": {
+    "stepsLabel": "Etapas",
+    "stepProperty": "Seu imóvel",
+    "stepContact": "Seus dados",
+    "operationQuestion": "O que você quer fazer?",
+    "operationLabel": "Operação",
+    "operations": {
+      "sell": "Vender",
+      "rent": "Alugar"
+    },
+    "propertyType": "Tipo de imóvel",
+    "propertyTypePlaceholder": "Escolha uma opção",
+    "address": "Endereço",
+    "addressPlaceholder": "Rua, número e cidade",
+    "continue": "Continuar",
+    "name": "Nome e sobrenome",
+    "phone": "Telefone",
+    "email": "E-mail",
+    "optional": "(opcional)",
+    "notes": "Algo que queira nos contar",
+    "notesPlaceholder": "Ex.: metragem, estado, se está ocupado…",
+    "back": "Voltar aos dados do imóvel",
+    "submit": "Solicitar avaliação",
+    "sending": "Enviando…",
+    "errors": {
+      "operationType": "Escolha se quer vender ou alugar.",
+      "propertyType": "Escolha o tipo de imóvel.",
+      "address": "Digite o endereço (rua, número e cidade).",
+      "name": "Digite seu nome.",
+      "phone": "Digite um telefone com DDD.",
+      "email": "Confira o e-mail."
+    },
+    "successTitle": "Recebemos sua solicitação",
+    "successBody": "Um corretor vai ligar para combinar a visita. Se preferir, fale conosco diretamente.",
+    "successWhatsappMessage": "Olá, acabei de pedir uma avaliação pelo site."
+  },
+  "band": {
+    "imageAlt": "Casa branca de dois andares com jardim",
+    "title": "Quer vender ou alugar o seu imóvel?",
+    "body": "Dizemos quanto vale hoje, sem custo, e o anunciamos onde a demanda se move.",
+    "cta": "Avaliar meu imóvel"
+  },
+  "actions": {
+    "invalid": "Erro nos dados. Revise o formulário.",
+    "failed": "Não conseguimos enviar sua solicitação. Tente novamente em alguns minutos ou escreva pelo WhatsApp.",
+    "success": "Solicitação enviada! Entraremos em contato em breve."
+  }
+}

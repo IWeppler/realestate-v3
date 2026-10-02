@@ -611,12 +611,12 @@ function DefaultMarkerIcon() {
   );
 }
 
-function PopupCloseButton({ onClick }: { onClick: () => void }) {
+function PopupCloseButton({ onClick, label = "Close popup" }: { onClick: () => void; label?: string }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label="Close popup"
+      aria-label={label}
       className="focus-visible:ring-ring hover:bg-muted text-foreground absolute top-1 right-1 z-10 inline-flex size-5 cursor-pointer items-center justify-center rounded-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset"
     >
       <X className="size-3.5" />
@@ -631,12 +631,14 @@ type MarkerPopupProps = {
   className?: string;
   /** Show a close button in the popup (default: false) */
   closeButton?: boolean;
+  closeButtonLabel?: string;
 } & Omit<PopupOptions, "className" | "closeButton">;
 
 function MarkerPopup({
   children,
   className,
   closeButton = false,
+  closeButtonLabel,
   ...popupOptions
 }: MarkerPopupProps) {
   const { marker, map } = useMarkerContext();
@@ -686,7 +688,7 @@ function MarkerPopup({
         className,
       )}
     >
-      {closeButton && <PopupCloseButton onClick={handleClose} />}
+      {closeButton && <PopupCloseButton onClick={handleClose} label={closeButtonLabel} />}
       {children}
     </div>,
     container,
@@ -798,6 +800,7 @@ function MarkerLabel({
 }
 
 type MapControlsProps = {
+  labels?: Partial<Record<"zoomIn" | "zoomOut" | "resetNorth" | "locate" | "fullscreen", string>>;
   /** Position of the controls on the map (default: "bottom-right") */
   position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** Show zoom in/out buttons (default: true) */
@@ -865,6 +868,7 @@ function MapControls({
   showCompass = false,
   showLocate = false,
   showFullscreen = false,
+  labels,
   className,
   onLocate,
 }: MapControlsProps) {
@@ -930,24 +934,24 @@ function MapControls({
     >
       {showZoom && (
         <ControlGroup>
-          <ControlButton onClick={handleZoomIn} label="Zoom in">
+          <ControlButton onClick={handleZoomIn} label={labels?.zoomIn ?? "Zoom in"}>
             <Plus className="size-4" />
           </ControlButton>
-          <ControlButton onClick={handleZoomOut} label="Zoom out">
+          <ControlButton onClick={handleZoomOut} label={labels?.zoomOut ?? "Zoom out"}>
             <Minus className="size-4" />
           </ControlButton>
         </ControlGroup>
       )}
       {showCompass && (
         <ControlGroup>
-          <CompassButton onClick={handleResetBearing} />
+          <CompassButton onClick={handleResetBearing} label={labels?.resetNorth} />
         </ControlGroup>
       )}
       {showLocate && (
         <ControlGroup>
           <ControlButton
             onClick={handleLocate}
-            label="Find my location"
+            label={labels?.locate ?? "Find my location"}
             disabled={waitingForLocation}
           >
             {waitingForLocation ? (
@@ -960,7 +964,7 @@ function MapControls({
       )}
       {showFullscreen && (
         <ControlGroup>
-          <ControlButton onClick={handleFullscreen} label="Toggle fullscreen">
+          <ControlButton onClick={handleFullscreen} label={labels?.fullscreen ?? "Toggle fullscreen"}>
             <Maximize className="size-4" />
           </ControlButton>
         </ControlGroup>
@@ -969,7 +973,7 @@ function MapControls({
   );
 }
 
-function CompassButton({ onClick }: { onClick: () => void }) {
+function CompassButton({ onClick, label = "Reset bearing to north" }: { onClick: () => void; label?: string }) {
   const { map } = useMap();
   const compassRef = useRef<SVGSVGElement>(null);
 
@@ -995,7 +999,7 @@ function CompassButton({ onClick }: { onClick: () => void }) {
   }, [map]);
 
   return (
-    <ControlButton onClick={onClick} label="Reset bearing to north">
+    <ControlButton onClick={onClick} label={label}>
       <svg
         ref={compassRef}
         viewBox="0 0 24 24"
@@ -1024,6 +1028,7 @@ type MapPopupProps = {
   className?: string;
   /** Show a close button in the popup (default: false) */
   closeButton?: boolean;
+  closeButtonLabel?: string;
 } & Omit<PopupOptions, "className" | "closeButton">;
 
 function MapPopup({
@@ -1033,6 +1038,7 @@ function MapPopup({
   children,
   className,
   closeButton = false,
+  closeButtonLabel,
   ...popupOptions
 }: MapPopupProps) {
   const { map } = useMap();
@@ -1097,7 +1103,7 @@ function MapPopup({
         className,
       )}
     >
-      {closeButton && <PopupCloseButton onClick={handleClose} />}
+      {closeButton && <PopupCloseButton onClick={handleClose} label={closeButtonLabel} />}
       {children}
     </div>,
     container,

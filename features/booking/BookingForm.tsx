@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { useFormatter, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import {
   CalendarCheck,
   CalendarPlus,
@@ -27,30 +28,30 @@ import {
 } from "@/features/booking/createBookingAction";
 import type { DayAvailability } from "@/features/booking/availability";
 
-const WEEKDAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-const MONTHS = [
-  "ene", "feb", "mar", "abr", "may", "jun",
-  "jul", "ago", "sep", "oct", "nov", "dic",
-];
+const WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"] as const;
 
-function dayLabel(ymd: string, weekday: number, index: number) {
+type T = ReturnType<typeof useTranslations<"booking.form">>;
+type Format = ReturnType<typeof useFormatter>;
+
+function dayLabel(ymd: string, weekday: number, index: number, t: T) {
   const [, m, d] = ymd.split("-");
   return {
-    weekday: index === 0 ? "Hoy" : index === 1 ? "Mañana" : WEEKDAYS[weekday],
+    weekday: index === 0 ? t("today") : index === 1 ? t("tomorrow") : t(`weekdays.${WEEKDAYS[weekday]}`),
     day: String(Number(d)),
-    month: MONTHS[Number(m) - 1],
+    month: t(`months.${MONTHS[Number(m) - 1]}`),
   };
 }
 
-function longDate(ymd: string) {
+function longDate(ymd: string, format: Format) {
   const [y, m, d] = ymd.split("-").map(Number);
   const date = new Date(Date.UTC(y, m - 1, d, 12));
-  return new Intl.DateTimeFormat("es-AR", {
+  return format.dateTime(date, {
     weekday: "long",
     day: "numeric",
     month: "long",
     timeZone: "UTC",
-  }).format(date);
+  });
 }
 
 function endTime(time: string) {
@@ -130,6 +131,8 @@ export function BookingForm({
   propertyId: string;
   days: DayAvailability[];
 }) {
+  const t = useTranslations("booking.form");
+  const format = useFormatter();
   const firstOpen = days.find((d) => d.slots.some((s) => s.available));
   const [date, setDate] = useState(firstOpen?.ymd ?? "");
   const [time, setTime] = useState("");
@@ -163,7 +166,7 @@ export function BookingForm({
             <Check className="h-6 w-6" strokeWidth={2.5} />
           </div>
           <h2 className="mt-4 font-display text-2xl font-normal text-zinc-900 md:text-3xl">
-            ¡Listo, tu visita está agendada!
+            {t("successTitle")}
           </h2>
           <p className="mt-2 text-zinc-600">{state.message}</p>
         </div>
@@ -172,20 +175,20 @@ export function BookingForm({
           <div className="flex gap-4 rounded-xl border border-zinc-200 p-4">
             <div className="flex w-16 shrink-0 flex-col items-center justify-center overflow-hidden rounded-lg border border-zinc-200 text-center">
               <span className="w-full bg-zinc-900 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
-                {MONTHS[Number(m) - 1]}
+                {t(`months.${MONTHS[Number(m) - 1]}`)}
               </span>
               <span className="py-1 text-2xl font-semibold text-zinc-900">{Number(d)}</span>
             </div>
             <dl className="min-w-0 space-y-1.5 text-sm">
               <div className="flex items-center gap-2">
-                <dt className="sr-only">Cuándo</dt>
+                <dt className="sr-only">{t("when")}</dt>
                 <Clock className="h-4 w-4 shrink-0 text-zinc-400" />
                 <dd className="font-semibold capitalize text-zinc-900">
-                  {longDate(b.date)} · {b.time} a {endTime(b.time)} hs
+                  {t("whenValue", { date: longDate(b.date, format), start: b.time, end: endTime(b.time) })}
                 </dd>
               </div>
               <div className="flex items-start gap-2">
-                <dt className="sr-only">Dónde</dt>
+                <dt className="sr-only">{t("where")}</dt>
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" />
                 <dd className="text-zinc-700">
                   <span className="font-medium text-zinc-900">{b.propertyTitle}</span>
@@ -193,14 +196,14 @@ export function BookingForm({
                 </dd>
               </div>
               <div className="flex items-center gap-2">
-                <dt className="sr-only">Con</dt>
+                <dt className="sr-only">{t("with")}</dt>
                 <User className="h-4 w-4 shrink-0 text-zinc-400" />
-                <dd className="text-zinc-700">Te recibe {b.agentName}</dd>
+                <dd className="text-zinc-700">{t("host", { name: b.agentName })}</dd>
               </div>
             </dl>
           </div>
 
-          <p className="mt-6 mb-3 text-sm font-semibold text-zinc-900">Sumala a tu calendario</p>
+          <p className="mt-6 mb-3 text-sm font-semibold text-zinc-900">{t("addToCalendar")}</p>
           <div className="grid gap-2.5 sm:grid-cols-2">
             <a
               href={b.googleCalendarUrl}
@@ -209,7 +212,7 @@ export function BookingForm({
               className="inline-flex h-12 items-center justify-center gap-2.5 rounded-xl bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800"
             >
               <GoogleCalendarIcon />
-              Google Calendar
+              {t("google")}
             </a>
             <a
               href={b.outlookCalendarUrl}
@@ -218,7 +221,7 @@ export function BookingForm({
               className="inline-flex h-12 items-center justify-center gap-2.5 rounded-xl border border-zinc-200 px-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
             >
               <CalendarPlus className="h-4 w-4" />
-              Outlook
+              {t("outlook")}
             </a>
           </div>
           <a
@@ -227,7 +230,7 @@ export function BookingForm({
             className="mt-3 inline-flex items-center gap-1.5 text-sm text-zinc-500 underline-offset-4 hover:text-zinc-900 hover:underline"
           >
             <Download className="h-3.5 w-3.5" />
-            Apple Calendar u otro (.ics)
+            {t("apple")}
           </a>
 
           <div className="mt-8 flex flex-wrap gap-3 border-t border-zinc-100 pt-6">
@@ -235,13 +238,13 @@ export function BookingForm({
               href={`/propiedades/${propertyId}`}
               className="inline-flex h-10 items-center rounded-xl border border-zinc-200 px-4 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
             >
-              Volver a la propiedad
+              {t("backToProperty")}
             </Link>
             <Link
               href="/propiedades"
               className="inline-flex h-10 items-center rounded-xl px-4 text-sm font-medium text-zinc-600 transition hover:text-zinc-900"
             >
-              Ver otras propiedades
+              {t("viewOthers")}
             </Link>
           </div>
         </div>
@@ -263,13 +266,13 @@ export function BookingForm({
         <section className="p-6 md:p-8">
           <div className="flex items-start justify-between gap-3">
             <StepTitle n={1} done={Boolean(date)}>
-              Elegí el día
+              {t("stepDay")}
             </StepTitle>
             <div className="hidden gap-1.5 sm:flex">
               <button
                 type="button"
                 onClick={() => scrollDays(-1)}
-                aria-label="Días anteriores"
+                aria-label={t("previousDays")}
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition hover:bg-zinc-50"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -277,7 +280,7 @@ export function BookingForm({
               <button
                 type="button"
                 onClick={() => scrollDays(1)}
-                aria-label="Días siguientes"
+                aria-label={t("nextDays")}
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition hover:bg-zinc-50"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -290,7 +293,7 @@ export function BookingForm({
           >
             {days.map((d, i) => {
               const open = d.slots.filter((s) => s.available).length;
-              const l = dayLabel(d.ymd, d.weekday, i);
+              const l = dayLabel(d.ymd, d.weekday, i, t);
               const selected = d.ymd === date;
               return (
                 <button
@@ -319,7 +322,7 @@ export function BookingForm({
                       selected ? "text-white/70" : open === 0 ? "text-zinc-400" : "text-emerald-700",
                     )}
                   >
-                    {open === 0 ? "Sin turnos" : `${open} ${open === 1 ? "turno" : "turnos"}`}
+                    {open === 0 ? t("noSlots") : t("slotCount", { count: open })}
                   </span>
                 </button>
               );
@@ -330,18 +333,18 @@ export function BookingForm({
         {/* 2. Horario */}
         <section className="p-6 md:p-8">
           <StepTitle n={2} done={Boolean(time)}>
-            Elegí el horario
+            {t("stepTime")}
           </StepTitle>
           {!selectedDay ? (
-            <p className="text-sm text-zinc-500">Primero elegí un día.</p>
+            <p className="text-sm text-zinc-500">{t("pickDayFirst")}</p>
           ) : (
             <div className="space-y-5">
-              <p className="text-sm capitalize text-zinc-600">{longDate(selectedDay.ymd)}</p>
-              <SlotGroup icon={Sun} label="Mañana" slots={morning} selected={time} onSelect={setTime} />
-              <SlotGroup icon={Sunset} label="Tarde" slots={afternoon} selected={time} onSelect={setTime} />
+              <p className="text-sm capitalize text-zinc-600">{longDate(selectedDay.ymd, format)}</p>
+              <SlotGroup icon={Sun} label={t("morning")} slots={morning} selected={time} onSelect={setTime} />
+              <SlotGroup icon={Sunset} label={t("afternoon")} slots={afternoon} selected={time} onSelect={setTime} />
               <p className="flex items-center gap-1.5 text-xs text-zinc-500">
                 <Clock className="h-3.5 w-3.5" />
-                La visita dura aproximadamente 1 hora.
+                {t("duration")}
               </p>
             </div>
           )}
@@ -350,15 +353,15 @@ export function BookingForm({
         {/* 3. Datos */}
         <section className="p-6 md:p-8">
           <StepTitle n={3} done={false}>
-            Tus datos
+            {t("stepData")}
           </StepTitle>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="name">Nombre y apellido</Label>
+              <Label htmlFor="name">{t("name")}</Label>
               <Input id="name" name="name" required minLength={3} autoComplete="name" className="h-11" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="phone">Teléfono / WhatsApp</Label>
+              <Label htmlFor="phone">{t("phone")}</Label>
               <Input
                 id="phone"
                 name="phone"
@@ -366,26 +369,26 @@ export function BookingForm({
                 required
                 minLength={8}
                 autoComplete="tel"
-                placeholder="11 2345 6789"
+                placeholder={t("phonePlaceholder")}
                 className="h-11"
               />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="email">
-                Email <span className="font-normal text-zinc-400">(opcional)</span>
+                {t("email")} <span className="font-normal text-zinc-400">{t("optional")}</span>
               </Label>
               <Input id="email" name="email" type="email" autoComplete="email" className="h-11" />
             </div>
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="message">
-                Comentario <span className="font-normal text-zinc-400">(opcional)</span>
+                {t("comment")} <span className="font-normal text-zinc-400">{t("optional")}</span>
               </Label>
               <Textarea
                 id="message"
                 name="message"
                 rows={3}
                 maxLength={1000}
-                placeholder="Ej.: voy con mi pareja, me interesa saber si acepta mascotas…"
+                placeholder={t("commentPlaceholder")}
               />
             </div>
           </div>
@@ -396,13 +399,13 @@ export function BookingForm({
       <div className="border-t border-zinc-200 bg-zinc-50 p-6 md:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm">
-            <p className="text-zinc-500">Tu visita</p>
+            <p className="text-zinc-500">{t("summaryTitle")}</p>
             <p className="font-semibold capitalize text-zinc-900">
               {date && time
-                ? `${longDate(date)} · ${time} hs`
+                ? t("summaryComplete", { date: longDate(date, format), time })
                 : date
-                  ? `${longDate(date)} · elegí un horario`
-                  : "Elegí día y horario"}
+                  ? t("summaryPickTime", { date: longDate(date, format) })
+                  : t("summaryEmpty")}
             </p>
           </div>
           <button
@@ -411,11 +414,11 @@ export function BookingForm({
             className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 sm:min-w-56"
           >
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarCheck className="h-4 w-4" />}
-            {pending ? "Confirmando…" : "Confirmar visita"}
+            {pending ? t("confirming") : t("confirm")}
           </button>
         </div>
         <p className="mt-4 text-xs text-zinc-500">
-          Sin costo ni compromiso. Te confirmamos por WhatsApp o teléfono.
+          {t("disclaimer")}
         </p>
       </div>
     </form>

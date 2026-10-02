@@ -1,0 +1,106 @@
+{
+  "page": {
+    "notFound": "Imóvel não encontrado",
+    "metaBedrooms": "{count} dorm.",
+    "metaForRent": "Para alugar",
+    "metaForSale": "À venda",
+    "backToAll": "Todos os imóveis",
+    "ref": "Cód. {code}",
+    "priceOnRequest": "Consultar preço",
+    "priceRent": "Aluguel mensal",
+    "priceSale": "Preço de venda",
+    "expensasExtra": "+ {amount} de condomínio",
+    "bedrooms": "{count, plural, one {# dormitório} other {# dormitórios}}",
+    "bathrooms": "{count, plural, one {# banheiro} other {# banheiros}}"
+  },
+  "status": {
+    "forSale": "À venda",
+    "forRent": "Para alugar",
+    "reserved": "Reservado",
+    "sold": "Vendido",
+    "rented": "Alugado"
+  },
+  "facts": {
+    "title": "O imóvel em resumo",
+    "rooms": "Cômodos",
+    "bedrooms": "Dormitórios",
+    "bathrooms": "Banheiros",
+    "totalArea": "Área total",
+    "coveredArea": "Área coberta",
+    "parking": "Vagas de garagem",
+    "type": "Tipo",
+    "pricePerM2": "Preço por m²",
+    "expensas": "Condomínio",
+    "age": "Idade do imóvel"
+  },
+  "description": {
+    "title": "Descrição",
+    "empty": "Não há descrição disponível.",
+    "readMore": "Continuar lendo",
+    "readLess": "Ver menos"
+  },
+  "amenities": {
+    "title": "Características"
+  },
+  "location": {
+    "title": "Localização",
+    "moreIn": "Mais imóveis em {city}",
+    "directions": "Como chegar",
+    "unavailable": "Localização indisponível",
+    "unavailableLong": "Localização exata indisponível no mapa.",
+    "recenterAria": "Centralizar no imóvel",
+    "recenter": "Centralizar",
+    "loadingMap": "Carregando mapa",
+    "gesturesWindows": "Use Ctrl + rolagem para dar zoom no mapa",
+    "gesturesMac": "Use ⌘ + rolagem para dar zoom no mapa",
+    "gesturesMobile": "Use dois dedos para mover o mapa"
+  },
+  "inquiry": {
+    "title": "Consulte sobre este imóvel",
+    "intro": "Sua consulta chega direto ao corretor responsável."
+  },
+  "related": {
+    "title": "Você também pode gostar",
+    "seeAll": "Ver todos"
+  },
+  "share": {
+    "share": "Compartilhar",
+    "copied": "Copiado!",
+    "whatsapp": "WhatsApp",
+    "copyLink": "Copiar link",
+    "copiedToast": "Link copiado para a área de transferência!",
+    "copyError": "Não foi possível copiar o link.",
+    "message": "Veja todos os detalhes na {brand}:"
+  },
+  "gallery": {
+    "dialog": "Galeria de fotos de {title}",
+    "zoomOut": "Afastar",
+    "resetZoom": "Restaurar zoom",
+    "zoomIn": "Aproximar",
+    "close": "Fechar galeria",
+    "photo": "Foto {index} de {title}",
+    "previous": "Foto anterior",
+    "next": "Próxima foto",
+    "hintZoomed": "Arraste para mover · toque duplo para sair do zoom",
+    "hint": "Toque duplo, rolagem ou pinça para dar zoom",
+    "viewPhoto": "Ver foto {index}"
+  },
+  "media": {
+    "empty": "Ainda não há fotos deste imóvel",
+    "listLabel": "Fotos do imóvel",
+    "viewAllAria": "Ver as {count} fotos de {title}",
+    "openPhoto": "Abrir foto {index} de {count}",
+    "mainAlt": "Foto principal de {title}",
+    "photoAlt": "Foto {index} de {title}",
+    "viewAll": "Ver as {count} fotos"
+  },
+  "loading": {
+    "label": "Carregando imóvel"
+  },
+  "social": {
+    "coveredArea": "{area} cob.",
+    "sold": "Vendido",
+    "rented": "Alugado",
+    "reserved": "Reservado"
+  }
+}

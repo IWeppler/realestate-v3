@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import { optimizeImage } from "@/features/dashboard/property/optimizeImage";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -427,17 +428,23 @@ export function PropertyForm({
       expensas: propertyData.expensas ?? null,
     };
 
-    // Fotos nuevas
+    // Fotos nuevas: se optimizan en el navegador (WebP, máx. 2560px) antes
+    // de subirlas. El nombre lleva un uuid, así que se cachean para siempre.
     const newImagePaths: string[] = [];
-    for (const file of files) {
-      const filePath = `${user.id}/${uuidv4()}-${file.name}`;
+    for (const [i, original] of files.entries()) {
+      toast.loading(`Optimizando y subiendo fotos (${i + 1}/${files.length})…`, { id: toastId });
+      const { file } = await optimizeImage(original);
+      const safeName = file.name
+        .normalize("NFD")
+        .replace(/\p{M}/gu, "")
+        .replace(/[^\w.-]+/g, "-");
+      const filePath = `${user.id}/${uuidv4()}-${safeName}`;
       const { data: up, error } = await supabase.storage
         .from("properties")
-        .upload(filePath, file);
+        .upload(filePath, file, { contentType: file.type, cacheControl: "31536000" });
       if (error) {
-        toast.error(`No se pudo subir ${file.name}: ${error.message}`, {
-          id: toastId,
-        });
+        // Toast aparte: el de progreso sigue con las fotos que faltan.
+        toast.error(`No se pudo subir ${original.name}: ${error.message}`);
         continue;
       }
       newImagePaths.push(

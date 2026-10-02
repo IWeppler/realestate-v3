@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { getTranslations } from "next-intl/server";
 import { supabaseAdmin, nextAgentForLead } from "@/lib/supabase-admin";
 
 // Server Action pública (visitante anónimo, sin sesión) -- usa
@@ -23,12 +24,14 @@ type FormState = {
   message: string;
 };
 
-const FAILED = "No pudimos enviar tu mensaje. Probá de nuevo en unos minutos o escribinos por WhatsApp.";
 
 export async function createContactLeadAction(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
+  const t = await getTranslations("contact.actions");
+  const FAILED = t("contactFailed");
+
   // 1. Obtener datos del formulario
   const rawData = {
     name: formData.get("name"),
@@ -44,7 +47,7 @@ export async function createContactLeadAction(
   if (!validation.success) {
     return {
       success: false,
-      message: "Datos inválidos. Revisa el formulario.",
+      message: t("contactInvalid"),
     };
   }
 
@@ -79,6 +82,6 @@ export async function createContactLeadAction(
   // 5. Éxito
   return {
     success: true,
-    message: "¡Mensaje enviado! Te contactaremos a la brevedad.",
+    message: t("contactSuccess"),
   };
 }

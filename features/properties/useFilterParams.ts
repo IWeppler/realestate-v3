@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 
 // Filtros del listado público en la URL. Compartido por la barra lateral
 // (vista lista) y la barra superior (vista mapa) para que ambas se

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/features/public/v2/Reveal";
 import { SplitHeading, StaggerItem } from "@/features/public/v2/motion";
@@ -13,6 +14,7 @@ import type { TypeTile } from "@/features/public/v2/propertyTypes";
 // recorre con el mouse o el teclado. En móvil no hay foto grande: cada
 // fila lleva su miniatura.
 export function TypeShowcase({ tiles }: { tiles: TypeTile[] }) {
+  const t = useTranslations("home.types");
   const [active, setActive] = useState(0);
   if (tiles.length === 0) return null;
 
@@ -41,7 +43,7 @@ export function TypeShowcase({ tiles }: { tiles: TypeTile[] }) {
         <div className="lg:col-span-7 lg:pl-6">
           <SplitHeading
             id="v3-types-title"
-            text="Explorá por tipo"
+            text={t("title")}
             className="font-display text-5xl leading-[0.95] font-medium tracking-[-0.035em] text-foreground md:text-6xl"
           />
 
@@ -63,7 +65,7 @@ export function TypeShowcase({ tiles }: { tiles: TypeTile[] }) {
                     {tile.name}
                   </span>
                   <span className="shrink-0 text-sm text-fg-secondary tabular-nums">
-                    {tile.count} {tile.count === 1 ? "disponible" : "disponibles"}
+                    {t("available", { count: tile.count })}
                   </span>
                   <span
                     aria-hidden="true"

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Bath, BedDouble, Maximize2 } from "lucide-react";
 import { LngLatBounds } from "maplibre-gl";
 import {
@@ -39,8 +40,8 @@ export function isLocated(p: MapProperty): p is LocatedProperty {
 }
 
 // Precio completo ("USD $140.000"): en el sitio público no se abrevia.
-export function fullPrice(price: number | null, currency: string | null) {
-  if (!price || price <= 0) return "Consultar precio";
+export function fullPrice(price: number | null, currency: string | null, fallback: string) {
+  if (!price || price <= 0) return fallback;
   return `${currency || "USD"} $${price.toLocaleString("es-AR")}`;
 }
 
@@ -138,6 +139,7 @@ function PriceMarkers({
   onActiveChange: (id: string | null) => void;
   onSelect: (id: string | null) => void;
 }) {
+  const t = useTranslations("listing.map");
   const { groups, map } = useGroups(points);
 
   return (
@@ -174,7 +176,7 @@ function PriceMarkers({
                         : "border-border bg-card text-foreground",
                     )}
                   >
-                    {fullPrice(p.price, p.currency)}
+                    {fullPrice(p.price, p.currency, t("priceOnRequest"))}
                   </span>
                   <span
                     className={cn(
@@ -203,7 +205,7 @@ function PriceMarkers({
             <MarkerContent className={highlighted ? "z-10" : undefined}>
               <span
                 role="button"
-                aria-label={`${g.members.length} propiedades en esta zona, acercar`}
+                aria-label={t("clusterAria", { count: g.members.length })}
                 className={cn(
                   "flex cursor-pointer items-center rounded-full border-2 px-3 py-1.5 text-xs font-semibold whitespace-nowrap shadow-[0_4px_12px_-4px_rgb(28_33_38/0.4)] transition-[transform,background-color] duration-150 hover:scale-105 motion-reduce:transition-none",
                   highlighted
@@ -211,7 +213,7 @@ function PriceMarkers({
                     : "border-card bg-foreground text-background",
                 )}
               >
-                {g.members.length} propiedades
+                {t("clusterLabel", { count: g.members.length })}
               </span>
             </MarkerContent>
           </MapMarker>
@@ -222,6 +224,7 @@ function PriceMarkers({
 }
 
 function Popup({ property }: { property: LocatedProperty }) {
+  const t = useTranslations("listing.map");
   const image = cardImages(property.property_images)[0];
   return (
     <Link
@@ -236,7 +239,7 @@ function Popup({ property }: { property: LocatedProperty }) {
       </div>
       <div className="space-y-1.5 p-3">
         <p className="text-lg leading-tight font-semibold">
-          {fullPrice(property.price, property.currency)}
+          {fullPrice(property.price, property.currency, t("priceOnRequest"))}
         </p>
         <p className="line-clamp-2 text-sm font-medium underline-offset-2 group-hover:underline">{property.title}</p>
         <p className="truncate text-xs text-muted-foreground">
@@ -249,10 +252,11 @@ function Popup({ property }: { property: LocatedProperty }) {
 }
 
 export function Specs({ property, className }: { property: MapProperty; className?: string }) {
+  const t = useTranslations("listing.map");
   const items = [
-    property.bedrooms ? { key: "bed", icon: BedDouble, text: `${property.bedrooms}`, label: "dormitorios" } : null,
-    property.bathrooms ? { key: "bath", icon: Bath, text: `${property.bathrooms}`, label: "baños" } : null,
-    property.total_area ? { key: "area", icon: Maximize2, text: `${property.total_area} m²`, label: "superficie" } : null,
+    property.bedrooms ? { key: "bed", icon: BedDouble, text: `${property.bedrooms}`, label: t("bedrooms") } : null,
+    property.bathrooms ? { key: "bath", icon: Bath, text: `${property.bathrooms}`, label: t("bathrooms") } : null,
+    property.total_area ? { key: "area", icon: Maximize2, text: `${property.total_area} m²`, label: t("area") } : null,
   ].filter(Boolean) as { key: string; icon: React.ElementType; text: string; label: string }[];
   if (items.length === 0) return null;
   return (
@@ -287,6 +291,8 @@ export default function PublicPropertiesMap({
 }) {
   // FitBounds solo cuando cambia el set de propiedades (filtros), no en
   // cada render.
+  const t = useTranslations("listing.map");
+  const controls = useTranslations("common.map");
   const points = useMemo(() => properties, [properties]);
   const selected = properties.find((p) => p.id === selectedId) ?? null;
 
@@ -298,15 +304,17 @@ export default function PublicPropertiesMap({
       zoom={6}
       cooperativeGestures
       locale={{
-        "CooperativeGesturesHandler.WindowsHelpText": "Usá Ctrl + rueda para hacer zoom en el mapa",
-        "CooperativeGesturesHandler.MacHelpText": "Usá ⌘ + rueda para hacer zoom en el mapa",
-        "CooperativeGesturesHandler.MobileHelpText": "Usá dos dedos para mover el mapa",
+        "Map.Title": controls("title"),
+        "AttributionControl.ToggleAttribution": controls("toggleAttribution"),
+        "CooperativeGesturesHandler.WindowsHelpText": t("gesturesWindows"),
+        "CooperativeGesturesHandler.MacHelpText": t("gesturesMac"),
+        "CooperativeGesturesHandler.MobileHelpText": t("gesturesMobile"),
       }}
       className="h-full w-full"
     >
       <FitBounds points={points} />
       <FlyTo target={focus} />
-      <MapControls position="top-right" showZoom showFullscreen />
+      <MapControls position="top-right" showZoom showFullscreen labels={{ zoomIn: controls("zoomIn"), zoomOut: controls("zoomOut"), fullscreen: controls("fullscreen") }} />
 
       <PriceMarkers
         points={points}
@@ -322,6 +330,7 @@ export default function PublicPropertiesMap({
           latitude={selected.latitude}
           offset={36}
           closeButton
+          closeButtonLabel={controls("closePopup")}
           closeOnClick={false}
           onClose={() => onSelect(null)}
           key={selected.id}
