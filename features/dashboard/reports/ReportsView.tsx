@@ -1,7 +1,9 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import type { ReportInsights } from "@/features/dashboard/reports/getReportInsights";
+import { DemandTable } from "@/features/dashboard/reports/DemandTable";
+import { ExportCsvButton } from "@/features/dashboard/reports/ExportCsvButton";
 import { InventoryAgeReport } from "@/features/dashboard/reports/InventoryAgeReport";
+import { PeriodNav } from "@/features/dashboard/reports/PeriodNav";
 import {
   Table,
   TableBody,
@@ -14,24 +16,87 @@ import {
 function Section({
   title,
   subtitle,
+  action,
   children,
 }: {
   title: string;
   subtitle?: string;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card">
-      <div className="border-b border-border px-5 py-4">
-        <h3 className="text-base font-semibold tracking-tight">{title}</h3>
-        {subtitle && (
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            {subtitle}
-          </p>
-        )}
+      <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
+        <div>
+          <h3 className="text-base font-semibold tracking-tight">{title}</h3>
+          {subtitle && (
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {subtitle}
+            </p>
+          )}
+        </div>
+        {action}
       </div>
       <div className="p-5">{children}</div>
     </section>
+  );
+}
+
+type Delta = {
+  text: string;
+  // good: la variación es favorable; null = sin cambio apreciable.
+  good: boolean | null;
+  up: boolean;
+};
+
+// Variación relativa. `lowerIsBetter` invierte lo favorable (ej. tiempos).
+function relativeDelta(
+  current: number | null,
+  previous: number | null | undefined,
+  lowerIsBetter = false,
+): Delta | null {
+  if (current === null || previous === null || previous === undefined) return null;
+  if (previous === 0) return null;
+  const change = (current - previous) / previous;
+  if (Math.abs(change) < 0.005) return { text: "0 %", good: null, up: true };
+  const up = change > 0;
+  return {
+    text: `${up ? "+" : "−"}${Math.abs(change * 100).toLocaleString("es-AR", { maximumFractionDigits: 0 })} %`,
+    good: lowerIsBetter ? !up : up,
+    up,
+  };
+}
+
+// Variación en puntos porcentuales, para métricas que ya son un porcentaje.
+function pointsDelta(current: number | null, previous: number | null): Delta | null {
+  if (current === null || previous === null) return null;
+  const change = (current - previous) * 100;
+  if (Math.abs(change) < 0.05) return { text: "0 pp", good: null, up: true };
+  const up = change > 0;
+  return {
+    text: `${up ? "+" : "−"}${Math.abs(change).toLocaleString("es-AR", { maximumFractionDigits: 1 })} pp`,
+    good: up,
+    up,
+  };
+}
+
+function DeltaBadge({ delta, versus }: { delta: Delta; versus: string }) {
+  const tone =
+    delta.good === null
+      ? "text-muted-foreground"
+      : delta.good
+        ? "text-success"
+        : "text-danger";
+  const Icon = delta.up ? ArrowUpRight : ArrowDownRight;
+  return (
+    <span
+      className={`inline-flex items-center gap-0.5 font-medium tabular-nums ${tone}`}
+      title={versus}
+    >
+      {delta.good !== null && <Icon className="size-3.5" aria-hidden />}
+      {delta.text}
+      <span className="sr-only"> {versus}</span>
+    </span>
   );
 }
 
@@ -39,17 +104,28 @@ function Metric({
   label,
   value,
   detail,
+  delta,
+  versus,
 }: {
   label: string;
   value: string;
   detail: string;
+  delta?: Delta | null;
+  versus?: string;
 }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">
-        {value}
-      </p>
+      <div className="mt-2 flex items-baseline gap-2">
+        <p className="text-2xl font-semibold tabular-nums tracking-tight">
+          {value}
+        </p>
+        {delta && versus && (
+          <span className="text-xs">
+            <DeltaBadge delta={delta} versus={versus} />
+          </span>
+        )}
+      </div>
       <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
     </div>
   );
@@ -65,6 +141,15 @@ function formatDuration(minutes: number | null) {
 
 function Funnel({ insights }: { insights: ReportInsights }) {
   const max = Math.max(1, insights.funnel[0]?.count ?? 0);
+  // Etapa con la mayor caída respecto de la anterior (si hay alguna real).
+  let worstIndex = -1;
+  insights.funnel.forEach((stage, index) => {
+    const drop = stage.dropPercent ?? 0;
+    if (drop > 0 && drop > (insights.funnel[worstIndex]?.dropPercent ?? 0)) {
+      worstIndex = index;
+    }
+  });
+  const worst = worstIndex > 0 ? insights.funnel[worstIndex] : null;
   return (
     <div className="space-y-3">
       {insights.funnel.map((stage) => (
@@ -75,7 +160,7 @@ function Funnel({ insights }: { insights: ReportInsights }) {
           <span>{stage.label}</span>
           <div className="h-5 overflow-hidden rounded-sm bg-muted">
             <div
-              className="h-full rounded-sm bg-primary"
+              className={`h-full rounded-sm ${worst?.key === stage.key ? "bg-pop" : "bg-primary"}`}
               style={{
                 width: `${stage.count ? Math.max(3, (stage.count / max) * 100) : 0}%`,
               }}
@@ -84,13 +169,22 @@ function Funnel({ insights }: { insights: ReportInsights }) {
           <span className="text-right tabular-nums">
             {stage.count.toLocaleString("es-AR")}
             {stage.dropPercent !== null && (
-              <span className="ml-1 text-xs text-muted-foreground">
+              <span
+                className={`ml-1 text-xs ${worst?.key === stage.key ? "font-semibold text-pop" : "text-muted-foreground"}`}
+              >
                 −{Math.round(stage.dropPercent * 100)}%
               </span>
             )}
           </span>
         </div>
       ))}
+      {worst && (
+        <p className="pt-1 text-xs text-muted-foreground">
+          <span className="font-medium text-pop">Mayor caída:</span> entre{" "}
+          {insights.funnel[worstIndex - 1].label} y {worst.label} (
+          {Math.round((worst.dropPercent ?? 0) * 100)} %).
+        </p>
+      )}
     </div>
   );
 }
@@ -98,7 +192,7 @@ function Funnel({ insights }: { insights: ReportInsights }) {
 function Sources({ sources }: { sources: ReportInsights["sources"] }) {
   if (!sources.length)
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">
         Todavía no hay leads en este período.
       </p>
     );
@@ -150,91 +244,6 @@ function Sources({ sources }: { sources: ReportInsights["sources"] }) {
   );
 }
 
-function DemandTable({
-  rows,
-  silent = false,
-}: {
-  rows: ReportInsights["ranking"];
-  silent?: boolean;
-}) {
-  if (!rows.length)
-    return (
-      <p className="text-sm text-muted-foreground">
-        No hay propiedades para mostrar.
-      </p>
-    );
-  return (
-    <div className="max-h-[290px] overflow-auto">
-      <Table
-        className={`table-fixed ${silent ? "min-w-[320px]" : "min-w-[560px]"}`}
-      >
-        <TableHeader>
-          <TableRow>
-            <TableHead className={silent ? "w-[70%]" : "w-[36%]"}>
-              Propiedad
-            </TableHead>
-            {!silent && (
-              <>
-                <TableHead className="text-right">Consultas</TableHead>
-                <TableHead className="text-right">Visitas</TableHead>
-                <TableHead className="text-right">Negociación</TableHead>
-              </>
-            )}
-            <TableHead className="text-right">Días</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell className="py-2">
-                <Link
-                  href={`/dashboard/propiedades/${row.id}`}
-                  title={row.title}
-                  className="flex max-w-[190px] items-center gap-1 font-medium hover:text-primary hover:underline"
-                >
-                  <span className="min-w-0 truncate">{row.title}</span>
-                  <ArrowUpRight className="size-3.5 shrink-0" />
-                </Link>
-                {row.city && (
-                  <span
-                    className="block max-w-[190px] truncate text-xs text-muted-foreground"
-                    title={row.city}
-                  >
-                    {row.city}
-                  </span>
-                )}
-              </TableCell>
-              {!silent && (
-                <>
-                  <TableCell className="py-2 text-right tabular-nums">
-                    {row.inquiries}
-                  </TableCell>
-                  <TableCell className="py-2 text-right tabular-nums">
-                    {row.visits}
-                  </TableCell>
-                  <TableCell className="py-2 text-right tabular-nums">
-                    {row.negotiations}
-                  </TableCell>
-                </>
-              )}
-              <TableCell className="py-2 text-right tabular-nums">
-                {row.ageDays}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
-const PERIOD_OPTIONS = [
-  { value: "30", label: "30 días" },
-  { value: "90", label: "90 días" },
-  { value: "365", label: "12 meses" },
-  { value: "todo", label: "Histórico" },
-] as const;
-
 export function ReportsView({
   insights,
   isAdmin,
@@ -242,30 +251,28 @@ export function ReportsView({
   insights: ReportInsights;
   isAdmin: boolean;
 }) {
-  const { firstContact, scope } = insights;
+  const { firstContact, scope, previous } = insights;
   const selected =
     insights.periodDays === null ? "todo" : String(insights.periodDays);
+  const versus = `vs. ${insights.periodDays} días previos`;
+  const conversion = scope.leads ? scope.closed / scope.leads : null;
+  const previousConversion = previous?.leads
+    ? previous.closed / previous.leads
+    : null;
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold">Actividad comercial</h2>
+          <h2 className="text-lg font-semibold tracking-tight">
+            Actividad comercial
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            {previous
+              ? `Variación ${versus}.`
+              : "Sin comparación en el período histórico."}
+          </p>
         </div>
-        <nav
-          aria-label="Período del reporte"
-          className="inline-flex flex-wrap gap-1 rounded-lg border border-border bg-card p-1"
-        >
-          {PERIOD_OPTIONS.map((option) => (
-            <Link
-              key={option.value}
-              href={`/dashboard/reportes?periodo=${option.value}`}
-              aria-current={selected === option.value ? "page" : undefined}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${selected === option.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
-            >
-              {option.label}
-            </Link>
-          ))}
-        </nav>
+        <PeriodNav selected={selected} />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -273,11 +280,15 @@ export function ReportsView({
           label="Leads captados"
           value={scope.leads.toLocaleString("es-AR")}
           detail="Cohorte del período seleccionado"
+          delta={relativeDelta(scope.leads, previous?.leads)}
+          versus={versus}
         />
         <Metric
           label="Cerrados actualmente"
           value={scope.closed.toLocaleString("es-AR")}
           detail="De los leads captados en el período"
+          delta={relativeDelta(scope.closed, previous?.closed)}
+          versus={versus}
         />
         <Metric
           label="Conversión a cierre"
@@ -287,11 +298,19 @@ export function ReportsView({
               : "—"
           }
           detail={`${scope.discarded} descartados incluidos en la base`}
+          delta={pointsDelta(conversion, previousConversion)}
+          versus={versus}
         />
         <Metric
           label="Tiempo hasta Contactado"
           value={formatDuration(firstContact.medianMinutes)}
           detail={`${firstContact.measured}/${firstContact.total} medidos · ${firstContact.withoutRecordedContact} sin registro`}
+          delta={relativeDelta(
+            firstContact.medianMinutes,
+            previous?.medianMinutes,
+            true,
+          )}
+          versus={versus}
         />
       </div>
 
@@ -299,6 +318,18 @@ export function ReportsView({
         <Section
           title="Origen de leads"
           subtitle="Cierres actuales / leads captados en el período."
+          action={
+            <ExportCsvButton
+              filename="origen-de-leads.csv"
+              header={["Canal", "Leads", "Cerrados", "Conversión (%)"]}
+              rows={insights.sources.map((source) => [
+                source.label,
+                source.leads,
+                source.closed,
+                Number((source.conversion * 100).toFixed(1)),
+              ])}
+            />
+          }
         >
           <Sources sources={insights.sources} />
         </Section>

@@ -24,6 +24,8 @@ export type ReportInsights = {
   silent: DemandItem[];
   funnel: FunnelStep[];
   firstContact: { medianMinutes: number | null; measured: number; withoutRecordedContact: number; total: number };
+  // Ventana inmediatamente anterior de igual duración. Null en "Histórico".
+  previous: { leads: number; closed: number; medianMinutes: number | null } | null;
 };
 
 const PAGE_SIZE = 1000;
@@ -64,6 +66,53 @@ async function fetchAll<T>(load: (from: number, to: number) => Promise<{ data: T
   }
 }
 
+type LeadHistoryRow = { entity_id: string; status: string; changed_at: string };
+
+async function loadLeadJourneys(
+  supabase: SupabaseClient<Database>,
+  leads: { id: string; status: string | null }[],
+) {
+  const history: LeadHistoryRow[] = [];
+  for (let offset = 0; offset < leads.length; offset += 100) {
+    const ids = leads.slice(offset, offset + 100).map((lead) => lead.id);
+    const batch = await fetchAll(async (from, to) => {
+      const { data, error } = await supabase.from("status_history")
+        .select("entity_id, status, changed_at")
+        .eq("entity_type", "lead")
+        .in("entity_id", ids)
+        .order("id")
+        .range(from, to);
+      return { data, error };
+    });
+    history.push(...batch);
+  }
+  const historyByLead = new Map<string, LeadHistoryRow[]>();
+  for (const entry of history) {
+    const entries = historyByLead.get(entry.entity_id) ?? [];
+    entries.push(entry);
+    historyByLead.set(entry.entity_id, entries);
+  }
+  const journeyByLead = new Map<string, ReturnType<typeof leadJourney>>();
+  for (const lead of leads) {
+    journeyByLead.set(lead.id, leadJourney(historyByLead.get(lead.id) ?? [], lead.status ?? "NUEVO"));
+  }
+  return { historyByLead, journeyByLead };
+}
+
+function firstContactMinutes(
+  leads: { id: string; created_at: string }[],
+  journeyByLead: Map<string, ReturnType<typeof leadJourney>>,
+) {
+  const minutes: number[] = [];
+  for (const lead of leads) {
+    const firstContact = journeyByLead.get(lead.id)?.firstContactAt;
+    if (!firstContact) continue;
+    const elapsed = (new Date(firstContact).getTime() - new Date(lead.created_at).getTime()) / 60000;
+    if (elapsed >= 0) minutes.push(elapsed);
+  }
+  return minutes;
+}
+
 export async function getReportInsights(
   supabase: SupabaseClient<Database>,
   opts: { isAdmin: boolean; userId: string; periodDays: number | null },
@@ -72,7 +121,8 @@ export async function getReportInsights(
   const asOf = new Date();
   const periodStart = periodDays === null ? null : new Date(asOf.getTime() - periodDays * 86400000);
   const thirtyDaysAgo = new Date(asOf.getTime() - 30 * 86400000).getTime();
-  const [properties, leads, propertyTypes] = await Promise.all([
+  const previousStart = periodDays === null || !periodStart ? null : new Date(periodStart.getTime() - periodDays * 86400000);
+  const [properties, leads, propertyTypes, previousLeads] = await Promise.all([
     fetchAll(async (from, to) => {
       let query = supabase.from("properties").select("id, title, created_at, status, operation_type, price, currency, city, neighborhood, province, property_type_id");
       if (!isAdmin) query = query.eq("agent_id", userId);
@@ -90,33 +140,19 @@ export async function getReportInsights(
       const { data, error } = await supabase.from("property_types").select("id, name").order("id").range(from, to);
       return { data, error };
     }),
+    previousStart && periodStart
+      ? fetchAll(async (from, to) => {
+          let query = supabase.from("leads").select("id, status, created_at")
+            .gte("created_at", previousStart.toISOString())
+            .lt("created_at", periodStart.toISOString());
+          if (!isAdmin) query = query.eq("agent_id", userId);
+          const { data, error } = await query.order("id").range(from, to);
+          return { data, error };
+        })
+      : Promise.resolve(null),
   ]);
 
-  const history: { entity_id: string; status: string; changed_at: string }[] = [];
-  for (let offset = 0; offset < leads.length; offset += 100) {
-    const ids = leads.slice(offset, offset + 100).map((lead) => lead.id);
-    const batch = await fetchAll(async (from, to) => {
-      const { data, error } = await supabase.from("status_history")
-        .select("entity_id, status, changed_at")
-        .eq("entity_type", "lead")
-        .in("entity_id", ids)
-        .order("id")
-        .range(from, to);
-      return { data, error };
-    });
-    history.push(...batch);
-  }
-
-  const historyByLead = new Map<string, typeof history>();
-  for (const entry of history) {
-    const entries = historyByLead.get(entry.entity_id) ?? [];
-    entries.push(entry);
-    historyByLead.set(entry.entity_id, entries);
-  }
-  const journeyByLead = new Map<string, ReturnType<typeof leadJourney>>();
-  for (const lead of leads) {
-    journeyByLead.set(lead.id, leadJourney(historyByLead.get(lead.id) ?? [], lead.status ?? "NUEVO"));
-  }
+  const { historyByLead, journeyByLead } = await loadLeadJourneys(supabase, leads);
 
   const typeById = new Map(propertyTypes.map((type) => [type.id, type.name]));
   const inventory: InventoryItem[] = properties
@@ -168,14 +204,16 @@ export async function getReportInsights(
     return { key, label, count, dropPercent: previous && previous > 0 ? (previous - count) / previous : null };
   });
 
-  const responseMinutes: number[] = [];
-  for (const lead of leads) {
-    const createdAt = new Date(lead.created_at).getTime();
-    const firstContact = journeyByLead.get(lead.id)?.firstContactAt;
-    if (firstContact) {
-      const minutes = (new Date(firstContact).getTime() - createdAt) / 60000;
-      if (minutes >= 0) responseMinutes.push(minutes);
-    }
+  const responseMinutes = firstContactMinutes(leads, journeyByLead);
+
+  let previous: ReportInsights["previous"] = null;
+  if (previousLeads) {
+    const { journeyByLead: previousJourneys } = await loadLeadJourneys(supabase, previousLeads);
+    previous = {
+      leads: previousLeads.length,
+      closed: previousLeads.filter((lead) => lead.status === "CERRADO").length,
+      medianMinutes: median(firstContactMinutes(previousLeads, previousJourneys)),
+    };
   }
 
   return {
@@ -206,5 +244,6 @@ export async function getReportInsights(
       withoutRecordedContact: leads.length - leads.filter((lead) => journeyByLead.get(lead.id)?.reachedContact).length,
       total: leads.length,
     },
+    previous,
   };
 }

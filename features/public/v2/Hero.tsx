@@ -17,15 +17,17 @@ export async function Hero({ types }: { types: PropertyTypeOption[] }) {
   return (
     <section className="w-full bg-background p-3 md:p-5 lg:px-10">
       <div className="relative isolate flex min-h-[calc(100dvh-5.5rem)] w-full overflow-hidden rounded-4xl bg-foreground md:min-h-[calc(100dvh-6.5rem)]">
+        {/* WebP ya comprimido: conservar su resolución completa. Con cover,
+            el ancho visible no refleja cuánto se amplía la foto por su altura. */}
         <Image
           src="/hero-brasil-v1.webp"
           alt=""
           fill
-          priority
-          quality={90}
-          sizes="(min-width: 1024px) calc(100vw - 5rem), (min-width: 768px) calc(100vw - 2.5rem), calc(100vw - 1.5rem)"
+          preload
+          unoptimized
           className="site-settle -z-20 object-cover"
         />
+        {/* public */}
         {/* Degradé para leer el texto claro: más denso abajo y a la izquierda. */}
         <div
           aria-hidden="true"

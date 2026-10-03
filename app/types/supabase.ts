@@ -14,6 +14,142 @@ export type Database = {
   }
   public: {
     Tables: {
+      lead_source_costs: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          month: string
+          source: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          currency: string
+          id?: string
+          month: string
+          source: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          month?: string
+          source?: string
+        }
+        Relationships: []
+      }
+      property_price_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          currency: string | null
+          id: string
+          price: number
+          property_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          currency?: string | null
+          id?: string
+          price: number
+          property_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          currency?: string | null
+          id?: string
+          price?: number
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_price_history_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_views_daily: {
+        Row: {
+          day: string
+          property_id: string
+          views: number
+        }
+        Insert: {
+          day: string
+          property_id: string
+          views?: number
+        }
+        Update: {
+          day?: string
+          property_id?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_views_daily_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buyer_contacts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          lead_id: string
+          outcome: string
+          property_id: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          lead_id: string
+          outcome: string
+          property_id: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          lead_id?: string
+          outcome?: string
+          property_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_contacts_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_contacts_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agents: {
         Row: {
           avatar_url: string | null
@@ -293,6 +429,17 @@ export type Database = {
           read_at: string | null
           source: string | null
           status: Database["public"]["Enums"]["lead_status"] | null
+          search_bathrooms_min: number | null
+          search_bedrooms_min: number | null
+          search_budget_max: number | null
+          search_budget_min: number | null
+          search_confirmed_at: string | null
+          search_currency: string | null
+          search_financing: boolean | null
+          search_locations: string[]
+          search_operation: string | null
+          search_type_ids: number[]
+          search_urgency: string | null
         }
         Insert: {
           agent_id?: string | null
@@ -307,6 +454,17 @@ export type Database = {
           read_at?: string | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"] | null
+          search_bathrooms_min?: number | null
+          search_bedrooms_min?: number | null
+          search_budget_max?: number | null
+          search_budget_min?: number | null
+          search_confirmed_at?: string | null
+          search_currency?: string | null
+          search_financing?: boolean | null
+          search_locations?: string[]
+          search_operation?: string | null
+          search_type_ids?: number[]
+          search_urgency?: string | null
         }
         Update: {
           agent_id?: string | null
@@ -321,6 +479,17 @@ export type Database = {
           read_at?: string | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"] | null
+          search_bathrooms_min?: number | null
+          search_bedrooms_min?: number | null
+          search_budget_max?: number | null
+          search_budget_min?: number | null
+          search_confirmed_at?: string | null
+          search_currency?: string | null
+          search_financing?: boolean | null
+          search_locations?: string[]
+          search_operation?: string | null
+          search_type_ids?: number[]
+          search_urgency?: string | null
         }
         Relationships: [
           {

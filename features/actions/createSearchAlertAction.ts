@@ -62,6 +62,26 @@ export async function createSearchAlertAction(_prev: FormState, formData: FormDa
     return { success: false, message: FAILED };
   }
 
+  // La búsqueda también queda estructurada en el lead (Buyer Intelligence):
+  // así el dashboard la cruza con propiedades nuevas sin leer la nota. Sin
+  // "tipo" (comprar/alquilar) no hay demanda utilizable y solo queda la nota.
+  const operation = criteria.tipo === "venta" || criteria.tipo === "alquiler" ? criteria.tipo : null;
+  const typeId = Number(criteria.typeId);
+  const atLeast = (v?: string) => {
+    const n = Number(v);
+    return Number.isInteger(n) && n > 0 ? n : null;
+  };
+  const demand = operation
+    ? {
+        search_operation: operation,
+        search_type_ids: Number.isInteger(typeId) && typeId > 0 ? [typeId] : [],
+        search_locations: (criteria.loc ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+        search_bedrooms_min: atLeast(criteria.bedrooms),
+        search_bathrooms_min: atLeast(criteria.bathrooms),
+        search_confirmed_at: new Date().toISOString(),
+      }
+    : {};
+
   const { error } = await supabaseAdmin.from("leads").insert({
     name,
     phone,
@@ -71,6 +91,7 @@ export async function createSearchAlertAction(_prev: FormState, formData: FormDa
     agent_id: agentId,
     status: "NUEVO",
     source: "ALERTA_BUSQUEDA",
+    ...demand,
   });
 
   if (error) {
