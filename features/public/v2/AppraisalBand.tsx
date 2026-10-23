@@ -18,6 +18,7 @@ export function AppraisalBand() {
         <Parallax className="min-h-72 lg:order-none lg:col-span-5 lg:min-h-full">
           <Image
             src="/contact.webp"
+            unoptimized
             alt={t("imageAlt")}
             fill
             sizes="(min-width: 1024px) 40vw, 100vw"

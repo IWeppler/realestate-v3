@@ -38,7 +38,7 @@ export function ArchitectureLanding({ brand }: { brand: string }) {
       <div className={styles.heroStage}>
       <section ref={hero} className={styles.hero} aria-labelledby="hero-title">
         <m.div className={`${styles.plane} ${styles.background}`} style={reduceMotion ? { scale: 1.035 } : { y: backgroundY, scale: 1.035 }}>
-          <Image src={photos.background} alt="" fill sizes="(max-aspect-ratio: 16/9) 180vh, 100vw" quality={75} loading="eager" fetchPriority="high" className={styles.sceneImage} />
+          <Image src={photos.background} unoptimized alt="" fill sizes="(max-aspect-ratio: 16/9) 180vh, 100vw" loading="eager" fetchPriority="high" className={styles.sceneImage} />
         </m.div>
         <div className={styles.skyShade} aria-hidden="true" />
 
@@ -57,7 +57,7 @@ export function ArchitectureLanding({ brand }: { brand: string }) {
         </m.div>
 
         <m.div className={`${styles.plane} ${styles.foreground}`} style={reduceMotion ? { scale: 1.035 } : { y: foregroundY, scale: foregroundScale }}>
-          <Image src={photos.foreground} alt="Casa contemporánea de hormigón y madera, con una amplia galería sobre un jardín tropical." fill sizes="(max-aspect-ratio: 16/9) 180vh, 100vw" quality={90} loading="eager" fetchPriority="high" className={styles.sceneImage} />
+          <Image src={photos.foreground} unoptimized alt="Casa contemporánea de hormigón y madera, con una amplia galería sobre un jardín tropical." fill sizes="(max-aspect-ratio: 16/9) 180vh, 100vw" loading="eager" fetchPriority="high" className={styles.sceneImage} />
         </m.div>
         <div className={styles.groundShade} aria-hidden="true" />
 
@@ -67,8 +67,8 @@ export function ArchitectureLanding({ brand }: { brand: string }) {
         </div>
       </section>
       <m.div className={styles.foliageBridge} aria-hidden="true" style={reduceMotion ? undefined : { y: foliageY }}>
-        <Image src={photos.foliage} alt="" fill sizes="(max-width: 767px) 690px, 104vw" quality={90} loading="eager" className={styles.foliageImage} />
-        <Image src={photos.foliage} alt="" fill sizes="(max-width: 767px) 690px, 1px" quality={90} className={`${styles.foliageImage} ${styles.foliageRight}`} />
+        <Image src={photos.foliage} unoptimized alt="" fill sizes="(max-width: 767px) 690px, 104vw" loading="eager" className={styles.foliageImage} />
+        <Image src={photos.foliage} unoptimized alt="" fill sizes="(max-width: 767px) 690px, 1px" className={`${styles.foliageImage} ${styles.foliageRight}`} />
       </m.div>
       </div>
 
@@ -81,7 +81,7 @@ export function ArchitectureLanding({ brand }: { brand: string }) {
           </m.div>
           <m.div {...reveal} className={styles.introDetail}>
             <div className={styles.detailPhoto}>
-              <Image src={photos.scene} alt="Detalle de la galería, el techo de madera y los ventanales de Casa Verde." fill sizes="(max-width: 767px) 100vw, 43vw" quality={90} className={styles.detailImage} />
+              <Image src={photos.scene} unoptimized alt="Detalle de la galería, el techo de madera y los ventanales de Casa Verde." fill sizes="(max-width: 767px) 100vw, 43vw" className={styles.detailImage} />
             </div>
             <div className={styles.photoNote}><span>Interior y exterior, conectados.</span><MoveUpRight size={21} strokeWidth={1.5} aria-hidden="true" /></div>
           </m.div>
@@ -93,7 +93,7 @@ export function ArchitectureLanding({ brand }: { brand: string }) {
             <p>La luz recorre los ambientes. Los ventanales desaparecen. La galería se convierte en un lugar más de la casa.</p>
           </m.div>
           <m.figure {...reveal} className={styles.panorama}>
-            <Image src={photos.scene} alt="Vista completa de Casa Verde y su jardín en una ladera arbolada." fill sizes="(max-width: 767px) 160vw, 100vw" quality={90} className={styles.panoramaImage} />
+            <Image src={photos.scene} unoptimized alt="Vista completa de Casa Verde y su jardín en una ladera arbolada." fill sizes="(max-width: 767px) 160vw, 100vw" className={styles.panoramaImage} />
           </m.figure>
           <div className={styles.materials}>
             <div><span>Hormigón</span><p>La estructura, a la vista.</p></div>

@@ -19,6 +19,7 @@ export function StatusPage({
           <div className="relative mx-auto aspect-[4/3] w-full max-w-sm overflow-hidden rounded-t-full rounded-b-3xl bg-sunken sm:aspect-[4/5] lg:max-w-none">
             <Image
               src="/contact.webp"
+              unoptimized
               alt=""
               fill
               priority

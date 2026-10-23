@@ -99,7 +99,8 @@ export default async function NosotrosPage({ params }: { params: Promise<{ local
           <div className="site-rise [--rise-delay:250ms] lg:col-span-5">
             <div className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-t-full rounded-b-3xl bg-sunken lg:max-w-none">
               <Image
-                src="/bghero2.jpg"
+                src="/bghero2.webp"
+                unoptimized
                 alt=""
                 fill
                 priority
@@ -135,7 +136,7 @@ export default async function NosotrosPage({ params }: { params: Promise<{ local
           />
           <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[repeat(2,minmax(14rem,auto))] lg:gap-5">
             <Reveal className="relative min-h-72 overflow-hidden rounded-3xl bg-sunken sm:col-span-2 lg:row-span-2">
-              <Image src="/bghero3.jpg" alt="" fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
+              <Image src="/bghero3.webp" alt="" fill unoptimized sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
             </Reveal>
             {VALUES.map((v, i) => {
               const accent = i === VALUES.length - 1;

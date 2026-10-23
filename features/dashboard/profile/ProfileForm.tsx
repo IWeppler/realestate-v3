@@ -85,6 +85,7 @@ export function ProfileForm({ agent }: { agent: Agent }) {
                 src={previewUrl}
                 alt="Avatar"
                 fill
+                unoptimized
                 className="object-cover"
               />
             ) : (

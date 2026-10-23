@@ -77,7 +77,8 @@ export default async function TasarPage({ params }: { params: Promise<{ locale: 
       <section className="w-full bg-background p-3 md:p-5 lg:px-10">
         <div className="relative isolate flex min-h-[calc(100dvh-5.5rem)] w-full overflow-hidden rounded-4xl bg-foreground md:min-h-[calc(100dvh-6.5rem)]">
           <Image
-            src="/bghero5.jpg"
+            src="/bghero5.webp"
+            unoptimized
             alt=""
             fill
             priority

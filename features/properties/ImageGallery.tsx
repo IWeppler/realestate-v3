@@ -318,7 +318,6 @@ export function Lightbox({
                   alt={t("photo", { index: index + 1, title })}
                   fill
                   sizes="100vw"
-                  quality={90}
                   draggable={false}
                   className="pointer-events-none object-contain"
                   priority
@@ -360,7 +359,6 @@ export function Lightbox({
                 width={16}
                 height={16}
                 sizes="100vw"
-                quality={90}
               />
             ))}
           </div>

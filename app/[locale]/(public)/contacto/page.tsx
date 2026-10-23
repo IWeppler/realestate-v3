@@ -109,7 +109,8 @@ export default async function ContactoPage({ params }: { params: Promise<{ local
                 sobre un degradé; si no, la foto queda sola. */}
             <StaggerItem as="li" index={3} columns={1} className="relative col-span-2 min-h-48 overflow-hidden rounded-3xl bg-sunken">
               <Image
-                src="/bghero2.jpg"
+                src="/bghero2.webp"
+                unoptimized
                 alt=""
                 fill
                 sizes="(min-width: 1024px) 40vw, 100vw"

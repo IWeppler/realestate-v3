@@ -11,13 +11,15 @@ const nextConfig: NextConfig = {
     globalNotFound: true,
   },
   images: {
-    // AVIF primero (~20-30% menos que WebP con la misma calidad) y WebP para
-    // los navegadores que no lo soportan.
-    formats: ["image/avif", "image/webp"],
-    // 90 lo usa la galería a pantalla completa; sin estar acá se bajaba a 75.
-    qualities: [75, 90],
+    // Vercel cobra cada combinación distinta de foto × ancho × formato ×
+    // calidad como una transformación. Un solo formato, una sola calidad y
+    // pocos anchos bajan el máximo por foto de 60 a 7.
+    formats: ["image/webp"],
+    qualities: [75],
+    deviceSizes: [640, 1080, 1600, 2048],
+    imageSizes: [96, 256, 384],
     // Las fotos de Storage tienen un uuid en el nombre y no cambian: cachear
-    // un mes evita volver a codificar (AVIF es lento de generar).
+    // un mes evita volver a codificarlas.
     minimumCacheTTL: 2678400,
     remotePatterns: [
       {

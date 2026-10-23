@@ -204,6 +204,7 @@ export function AgentsClientPage({
                       src={URL.createObjectURL(selectedFile)}
                       alt="Preview"
                       fill
+                      unoptimized
                       className="object-cover"
                     />
                   ) : editingAgent?.avatar_url ? (
@@ -211,6 +212,7 @@ export function AgentsClientPage({
                       src={editingAgent.avatar_url}
                       alt="Current"
                       fill
+                      unoptimized
                       className="object-cover"
                     />
                   ) : (
@@ -381,6 +383,7 @@ export function AgentsClientPage({
                         src={agent.avatar_url}
                         alt="Avatar"
                         fill
+                        unoptimized
                         className="object-cover"
                       />
                     ) : (
